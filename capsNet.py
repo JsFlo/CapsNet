@@ -21,6 +21,13 @@ def squash(s, axis=-1, epsilon=1e-7, name=None):
         return squash_factor * unit_vector
 
 
+def safe_norm(s, axis=-1, epsilon=1e-7, keep_dims=False, name=None):
+    with tf.name_scope(name, default_name="safe_norm"):
+        squared_norm = tf.reduce_sum(tf.square(s), axis=axis,
+                                     keep_dims=keep_dims)
+        return tf.sqrt(squared_norm + epsilon)
+
+
 def primary_capsule(X):
     print("Primary Capsules")
     printShape(X)  # (?, 28, 28, 1)
@@ -202,5 +209,28 @@ X = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
 batch_size = tf.shape(X)[0]
 
 primaryCapsuleOutput = primary_capsule(X)
+# this is more like "primary capsules digit caps prediction" (1152, 10, 16)
 digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
-routing_by_agreement(digitCapsPredictions)
+# and this is actually the digit caps output of (10, 16)
+digitCaps_postRouting = routing_by_agreement(digitCapsPredictions)
+
+print("\nDigit caps post routing")
+printShape(digitCaps_postRouting)  # (?, 1, 10, 16, 1)
+print(": ")
+
+# what we have: 10 16-dimensional vectors
+# what we want: which digit are you predicting ?
+
+# normalize to to get 10 scalars (length of the vectors)
+y_prob = safe_norm(digitCaps_postRouting, axis=-2)
+printShape(y_prob)  # (", 1, 10, 1)
+
+# get index of longest output vector
+y_prob_argmax = tf.argmax(y_prob, axis=2)
+printShape(y_prob_argmax)  # (?, 1, 1)
+
+# we have a 1 x 1 matrix , lets just say 1
+y_pred = tf.squeeze(y_prob_argmax, axis=[1, 2])
+printShape(y_pred)  # (?, )
+
+print("\nLoss")
