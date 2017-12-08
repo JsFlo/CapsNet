@@ -22,6 +22,7 @@ def squash(s, axis=-1, epsilon=1e-7, name=None):
 
 
 def primary_capsule(X):
+    print("Primary Capsules")
     printShape(X)  # (?, 28, 28, 1)
     caps1_n_maps = 32
     caps1_n_dims = 8
@@ -50,6 +51,7 @@ def primary_capsule(X):
 
 
 def digit_caps(last_layer, batch_size):
+    print("Digit Capsules")
     printShape(last_layer)  # (?, 1152, 8)
 
     # what we have: 1152 primary capsules with 8-dimension vector
@@ -104,11 +106,101 @@ def digit_caps(last_layer, batch_size):
     return digit_caps_predicted
 
 
+def routing_by_agreement(digit_caps, primary_n_caps, digit_n_caps):
+    print("Routing by Agreement")
+    printShape(digit_caps)  # (?, 1152, 10, 16, 1)
+
+    # weight for every pair
+    raw_weights = tf.zeros([batch_size, primary_n_caps, digit_n_caps, 1, 1],
+                           dtype=np.float32)
+    print("raw weights shape: {}".format(raw_weights.shape))
+
+    # round 1
+    round1_output = routing_round(raw_weights, digit_caps)
+    round1_agreement = get_round_agreement(round1_output, digit_caps, 1152)
+
+    # now update those weights from the beginning
+    # by just adding the agreement values
+    raw_weights_round_2 = tf.add(raw_weights, round1_agreement)
+
+    round2_output = routing_round(raw_weights_round_2, digit_caps)
+    return round2_output
+
+
+def routing_round(previous_weights, digit_caps_prediction):
+    print("\nRouting Round")
+    print(": Previous weights")
+    printShape(previous_weights)
+    print(": Digit caps prediction")
+    printShape(digit_caps_prediction)
+    print(": ")
+
+    print(": routing weights = softmax on previous weights")
+    routing_weights = tf.nn.softmax(previous_weights, dim=2)
+
+    print(": weighted predictions = routing weights x digit caps prediction")
+    weighted_predictions = tf.multiply(routing_weights, digit_caps_prediction)
+    printShape(weighted_predictions)
+
+    # Q: When getting weighted predictions why is there no bias ?
+
+    print(": reduce sum of all of them (collapse `rows`)")
+    weighted_sum = tf.reduce_sum(weighted_predictions, axis=1, keep_dims=True)
+    printShape(weighted_sum)
+
+    print(": squash to keep below 1")
+    round_output = squash(weighted_sum, axis=-2)
+    return round_output
+
+
+def get_round_agreement(round_output, digit_capsule_output, primary_n_caps):
+    """
+    Measure how close the digit capsule output is compared to a round guess.
+
+    How to measure for **1** capsule:
+        A = From digit-capsule_output (?, 1152, 10, 16, 1) take one(1, 10, 16, 1) take (10, 16)
+        B = From round output (1, 10, 16, 1) take (10, 16)
+
+        SCALAR = Perform a scalar product A(transpose) dot B
+
+        The SCALAR value is the "agreement" value
+
+        WAIT! Lets do all these scalar products in one run:
+        digit-capsule_output (?, 1152, 10, 16, 1)
+        round output (1, 10, 16, 1)
+
+        COPY & PASTE the round output to match the digit_capsule_output
+        so we want round output to be (1152, 10, 16, 1)
+
+    :param round_output: (1, 10, 16, 1)
+    :param digit_capsule_output: (?, 1152, 10, 16, 1)
+    :param primary_n_caps: 1152
+    :return:
+    """
+    print("\nRound Agreement")
+    print(": Round Output")
+    printShape(round_output)
+    print(": Digit capsule output")
+    printShape(digit_capsule_output)
+    print(": ")
+
+    print(": Tile round output")
+    # the copy&paste
+    round_output_tiled = tf.tile(
+        round_output, [1, primary_n_caps, 1, 1, 1])
+    printShape(round_output_tiled)
+
+    print(": Scalar Product")
+    # that scalar product we talked about above
+    agreement = tf.matmul(digit_capsule_output, round_output_tiled, transpose_a=True)
+    printShape(agreement)
+
+    return agreement
+
+
 X = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
 batch_size = tf.shape(X)[0]
 
 primaryCapsuleOutput = primary_capsule(X)
 digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
-
-
-
+routing_by_agreement(digitCapsPredictions, 1152, 10)
