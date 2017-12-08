@@ -106,14 +106,14 @@ def digit_caps(last_layer, batch_size):
     return digit_caps_predicted
 
 
-def routing_by_agreement(digit_caps, primary_n_caps, digit_n_caps):
+def routing_by_agreement(digit_caps):
     print("Routing by Agreement")
     printShape(digit_caps)  # (?, 1152, 10, 16, 1)
 
     # weight for every pair
-    raw_weights = tf.zeros([batch_size, primary_n_caps, digit_n_caps, 1, 1],
+    raw_weights = tf.zeros([batch_size, digit_caps.shape[1].value, digit_caps.shape[2].value, 1, 1],
                            dtype=np.float32)
-    print("raw weights shape: {}".format(raw_weights.shape))
+    print("raw weights shape: {}".format(raw_weights.shape))  # (?, 1152, 10, 1, 1)
 
     # round 1
     round1_output = routing_round(raw_weights, digit_caps)
@@ -203,4 +203,4 @@ batch_size = tf.shape(X)[0]
 
 primaryCapsuleOutput = primary_capsule(X)
 digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
-routing_by_agreement(digitCapsPredictions, 1152, 10)
+routing_by_agreement(digitCapsPredictions)
