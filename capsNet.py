@@ -46,8 +46,69 @@ def primary_capsule(X):
     printShape(caps1_raw)  # (?, 1152, 8)
 
     # squash to keep the vectors under 1
-    caps1_output = squash(caps1_raw)
+    return squash(caps1_raw)
+
+
+def digit_caps(last_layer, batch_size):
+    printShape(last_layer)  # (?, 1152, 8)
+
+    # what we have: 1152 primary capsules with 8-dimension vector
+    last_layer_n_caps = 1152
+    last_layer_n_dims = 8
+    # what we want: 10 "digit" capsules with 16-dimension vector
+    digit_n_caps = 10
+    digit_n_dims = 16
+
+    # The way to go from 8 dimensions to 16 dimensions is to use a **transformation matrix** for each pair (i, j)
+    # For each capsule in the first layer *foreach (1, 8) in (1152, 8)* we want to predict the output of every capsule in this layer
+
+    # since we will go from a primary-layer-capsule(1, 8) to a digit-capsule(1, 16)
+    # we need the transformation matrix to be (16, 8)
+    # ** (16, 8) * (8, 1) = (16, 1)**
+
+    # Transformation matrix for one primary capsule: want [1152, 1] with [16, 8] vectors
+    # EFFICIENT: let's do it for all capsules in this layer so we want [1152, 10] with [16, 8] vectors
+    # what we want: (?, 1152, 10, 16, 8) "an 1152 by 10 matrix of 16x8 matrix"
+
+    # first lets get (1, 1152, 10, 16, 8)
+    init_sigma = 0.01
+
+    W_init = tf.random_normal(
+        shape=(1, last_layer_n_caps, digit_n_caps, digit_n_dims, last_layer_n_dims),
+        stddev=init_sigma, dtype=tf.float32)
+    W = tf.Variable(W_init)
+
+    # copy paste for batch size to get (BATCH_SIZE, 1152, 10, 16, 8)
+    W_tiled = tf.tile(W, [batch_size, 1, 1, 1, 1])
+    printShape(W_tiled)  # (?, 1152, 10, 16, 8)
+
+    # what we have: Transformation_matrix(BATCH_SIZE, 1152, 10, 16, 8)
+    # what we need: Second matrix from last layer (BATCH_SIZE, 1152, 10, 8, 1)
+    #   last layer matrix: (BATCH_SIZE, 1152, 8)
+
+    # (BATCH_SIZE, 1152, 8) -> (BATCH_SIZE, 1152, 8, 1)
+    caps1_output_expanded = tf.expand_dims(last_layer, -1)
+    printShape(caps1_output_expanded)
+
+    # (BATCH_SIZE, 1152, 8, 1) -> (BATCH_SIZE, 1152, 1, 8, 1)
+    caps1_output_tile = tf.expand_dims(caps1_output_expanded, 2)
+    printShape(caps1_output_tile)
+
+    # copy paste for digit_n_caps: (BATCH_SIZE, 1152, 1, 8, 1) -> (BATCH_SIZE, 1152, 10, 8, 1)
+    caps1_output_tiled = tf.tile(caps1_output_tile, [1, 1, digit_n_caps, 1, 1])
+    printShape(caps1_output_tiled)
+
+    digit_caps_predicted = tf.matmul(W_tiled, caps1_output_tiled)
+    printShape(digit_caps_predicted)  # (? , 1152, 10, 16, 1)
+
+    return digit_caps_predicted
 
 
 X = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
-primary_capsule(X)
+batch_size = tf.shape(X)[0]
+
+primaryCapsuleOutput = primary_capsule(X)
+digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
+
+
+
