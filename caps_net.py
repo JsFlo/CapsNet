@@ -4,20 +4,16 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
+# Makes them look like static method calls (not python style but helps me :)
+import caps_net_model as CapsNetModel
+import decoder as Decoder
 from utils import printShape
 from utils import safe_norm
 
-# Makes them look like static method calls (not python style but helps me :)
-import decoder as Decoder
-import primary_capsules as PrimaryCapsules
-import digit_capsules as DigitCapsules
-
-input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
+input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32)
 batch_size = tf.shape(input_image_batch)[0]
 
-primaryCapsuleOutput = PrimaryCapsules.get_primary_capsules(input_image_batch)
-# this is more like "primary capsules digit caps prediction" (1152, 10, 16)
-digitCaps_postRouting = DigitCapsules.get_digit_caps_output(primaryCapsuleOutput, batch_size)
+digitCaps_postRouting = CapsNetModel.get_model_output(input_image_batch, batch_size)
 
 print("\nDigit caps post routing")
 printShape(digitCaps_postRouting)  # (?, 1, 10, 16, 1)
