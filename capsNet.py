@@ -234,3 +234,26 @@ y_pred = tf.squeeze(y_prob_argmax, axis=[1, 2])
 printShape(y_pred)  # (?, )
 
 print("\nLoss")
+
+# labels
+y = tf.placeholder(shape=[None], dtype=tf.int64, name="y")
+
+# paper used special margin loss to detect more than 1 digit in an image (overachievers)
+m_plus = 0.9
+m_minus = 0.1
+lambda_ = 0.5
+
+T = tf.one_hot(y, depth=10, name="T")
+
+# again
+digitCaps_postRouting_safeNorm = safe_norm(digitCaps_postRouting, axis=-2, keep_dims=True)
+
+present_error_raw = tf.square(tf.maximum(0., m_plus - digitCaps_postRouting_safeNorm))
+present_error = tf.reshape(present_error_raw, shape=(-1, 10))
+absent_error_raw = tf.square(tf.maximum(0., digitCaps_postRouting_safeNorm - m_minus))
+absent_error = tf.reshape(absent_error_raw, shape=(-1, 10))
+
+loss = tf.add(T * present_error, lambda_ * (1.0 - T) * absent_error)
+margin_loss = tf.reduce_mean(tf.reduce_sum(loss, axis=1))
+
+
