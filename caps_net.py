@@ -6,57 +6,14 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 import numpy as np
 import tensorflow as tf
-import decoder
 
+from utils import printShape
+from utils import safe_norm
+from utils import squash
 
-def printShape(tensor):
-    print(tensor.shape)
-
-
-def squash(s, axis=-1, epsilon=1e-7, name=None):
-    with tf.name_scope(name, default_name="squash"):
-        squared_norm = tf.reduce_sum(tf.square(s), axis=axis,
-                                     keep_dims=True)
-        safe_norm = tf.sqrt(squared_norm + epsilon)
-        squash_factor = squared_norm / (1. + squared_norm)
-        unit_vector = s / safe_norm
-        return squash_factor * unit_vector
-
-
-def safe_norm(s, axis=-1, epsilon=1e-7, keep_dims=False, name=None):
-    with tf.name_scope(name, default_name="safe_norm"):
-        squared_norm = tf.reduce_sum(tf.square(s), axis=axis,
-                                     keep_dims=keep_dims)
-        return tf.sqrt(squared_norm + epsilon)
-
-
-def primary_capsule(X):
-    print("Primary Capsules")
-    printShape(X)  # (?, 28, 28, 1)
-    caps1_n_maps = 32
-    caps1_n_dims = 8
-
-    conv1 = tf.layers.conv2d(X, filters=256, kernel_size=9, strides=1,
-                             padding="valid", activation=tf.nn.relu)
-    printShape(conv1)  # (?, 20, 20, 256)
-
-    # stride of 2!
-    conv2_n_filters = caps1_n_maps * caps1_n_dims
-    conv2 = tf.layers.conv2d(conv1, filters=conv2_n_filters, kernel_size=9, strides=2,
-                             padding="valid", activation=tf.nn.relu)
-    printShape(conv2)  # (?, 6, 6, 256)
-
-    # what we have: 256 feature maps of 6 x 6 scalar values (total: 9216)
-    # what we want: 32 maps of 6x6 vectors (8 dimensions a vector) (total: 9216)
-
-    # BUT since we are going to be FULLY CONNECTING this to the next layer
-    # we can just make it one long array [32 * 6 * 6, 8] = [1152, 8] = 1152 x 8 = 9216
-    caps1_n_caps = caps1_n_maps * 6 * 6  # 1152 primary capsules
-    caps1_raw = tf.reshape(conv2, [-1, caps1_n_caps, caps1_n_dims])
-    printShape(caps1_raw)  # (?, 1152, 8)
-
-    # squash to keep the vectors under 1
-    return squash(caps1_raw)
+# Makes them look like static method calls (not python style but helps me :)
+import decoder as Decoder
+import primary_capsules as PrimaryCapsules
 
 
 def digit_caps(last_layer, batch_size):
@@ -210,7 +167,7 @@ def get_round_agreement(round_output, digit_capsule_output, primary_n_caps):
 input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
 batch_size = tf.shape(input_image_batch)[0]
 
-primaryCapsuleOutput = primary_capsule(input_image_batch)
+primaryCapsuleOutput = PrimaryCapsules.get_primary_capsules(input_image_batch)
 # this is more like "primary capsules digit caps prediction" (1152, 10, 16)
 digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
 # and this is actually the digit caps output of (10, 16)
@@ -286,7 +243,7 @@ masked_out = tf.multiply(digitCaps_postRouting, reconstruction_mask_reshaped)
 
 # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
 n_output = 28 * 28
-reconstruction_loss = decoder.get_reconstruction_loss(masked_out, input_image_batch)
+reconstruction_loss = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
 
 # keep it small
 reconstruction_alpha = 0.0005
@@ -301,13 +258,13 @@ training_op = optimizer.minimize(final_loss)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
-n_epochs = 1#10
-batch_size = 1#50
+n_epochs = 1  # 10
+batch_size = 1  # 50
 restore_checkpoint = True
 
 mnist = input_data.read_data_sets("/tmp/data/")
-n_iterations_per_epoch = 1#mnist.train.num_examples // batch_size
-n_iterations_validation = 1#mnist.validation.num_examples // batch_size
+n_iterations_per_epoch = 1  # mnist.train.num_examples // batch_size
+n_iterations_validation = 1  # mnist.validation.num_examples // batch_size
 best_loss_val = np.infty
 checkpoint_path = "./checkpoints/my_caps_net"
 
