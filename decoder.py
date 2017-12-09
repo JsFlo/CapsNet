@@ -1,4 +1,3 @@
-import numpy as np
 import tensorflow as tf
 
 
@@ -17,7 +16,7 @@ def get_reconstruction_loss(capsules, target_images):
     decoder_input = tf.reshape(capsules, [-1, 10 * 16])
 
     # get prediction array
-    decoder_output = get_tf_layers_impl(decoder_input, n_output)
+    decoder_output = _get_tf_layers_impl(decoder_input, n_output)
 
     # flatten - reshape target images from (28 x 28) to (784)
     X_flat = tf.reshape(target_images, [-1, n_output])
@@ -27,8 +26,8 @@ def get_reconstruction_loss(capsules, target_images):
     return reconstruction_loss
 
 
-def get_tf_layers_impl(decoder_input, target,
-                       n_hidden1=512, n_hidden2=1024):
+def _get_tf_layers_impl(decoder_input, target,
+                        n_hidden1=512, n_hidden2=1024):
     """
     3 fc layers
     512 -> relu ->
