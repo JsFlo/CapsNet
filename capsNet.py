@@ -256,4 +256,63 @@ absent_error = tf.reshape(absent_error_raw, shape=(-1, 10))
 loss = tf.add(T * present_error, lambda_ * (1.0 - T) * absent_error)
 margin_loss = tf.reduce_mean(tf.reduce_sum(loss, axis=1))
 
+# reconstruction - there will be a loss here too used to compute the final loss
+# the final loss takes into account the margin loss and the reconstruction loss
 
+# first take the 10 16-dimension vectors output and pulls out the [predicted digit vector|correct_label digit vector)
+# (ex. prediction: digit 3 so take the 16-dimension vector and pass it to the decoder)
+
+# make a tensorflow placeholder for choosing based on label or prediction
+# during training pass the correct label digit
+# during inference pass what the model guessed
+mask_with_labels = tf.placeholder_with_default(False, shape=())
+
+reconstruction_targets = tf.cond(mask_with_labels,  # condition
+                                 lambda: y,  # if True
+                                 lambda: y_pred)  # if False)
+
+reconstruction_mask = tf.one_hot(reconstruction_targets,
+                                 depth=10)
+
+reconstruction_mask_reshaped = tf.reshape(
+    reconstruction_mask, [-1, 1, 10, 1, 1])
+
+# mask it! (10, 16) * [0, 0, 1, 0, 0, ...]
+masked_out = tf.multiply(digitCaps_postRouting, reconstruction_mask_reshaped)
+# (10, 16) but only (1, 16) has values because of the above
+
+
+# Decoder will use the 16 dimension vector to reconstruct the image
+print("\nDecoder")
+decoder_input = tf.reshape(masked_out,
+                           [-1, 10 * 16])
+printShape(decoder_input)
+
+n_hidden1 = 512
+n_hidden2 = 1024
+n_output = 28 * 28
+hidden1 = tf.layers.dense(decoder_input, n_hidden1,
+                          activation=tf.nn.relu)
+hidden2 = tf.layers.dense(hidden1, n_hidden2,
+                          activation=tf.nn.relu)
+decoder_output = tf.layers.dense(hidden2, n_output,
+                                 activation=tf.nn.sigmoid)
+
+# reconstruction loss
+X_flat = tf.reshape(X, [-1, n_output])
+squared_difference = tf.square(X_flat - decoder_output)
+reconstruction_loss = tf.reduce_sum(squared_difference)
+
+# final loss
+alpha = 0.0005
+
+# favor the margin loss
+final_loss = tf.add(margin_loss, alpha * reconstruction_loss)
+
+correct = tf.equal(y, y_pred)
+accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
+optimizer = tf.train.AdamOptimizer()
+training_op = optimizer.minimize(final_loss)
+
+init = tf.global_variables_initializer()
+saver = tf.train.Saver()
