@@ -2,6 +2,7 @@ from __future__ import division, print_function, unicode_literals
 
 import matplotlib
 import matplotlib.pyplot as plt
+from tensorflow.examples.tutorials.mnist import input_data
 
 import numpy as np
 import tensorflow as tf
@@ -316,3 +317,61 @@ training_op = optimizer.minimize(final_loss)
 
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
+
+n_epochs = 10
+batch_size = 50
+restore_checkpoint = True
+
+mnist = input_data.read_data_sets("/tmp/data/")
+n_iterations_per_epoch = mnist.train.num_examples // batch_size
+n_iterations_validation = mnist.validation.num_examples // batch_size
+best_loss_val = np.infty
+checkpoint_path = "./my_caps_net"
+
+with tf.Session() as sess:
+    if restore_checkpoint and tf.train.checkpoint_exists(checkpoint_path):
+        saver.restore(sess, checkpoint_path)
+    else:
+        init.run()
+
+    for epoch in range(n_epochs):
+        for iteration in range(1, n_iterations_per_epoch + 1):
+            X_batch, y_batch = mnist.train.next_batch(batch_size)
+            # Run the training operation and measure the loss:
+            _, loss_train = sess.run(
+                [training_op, final_loss],
+                feed_dict={X: X_batch.reshape([-1, 28, 28, 1]),
+                           y: y_batch,
+                           mask_with_labels: True})
+            print("\rIteration: {}/{} ({:.1f}%)  Loss: {:.5f}".format(
+                iteration, n_iterations_per_epoch,
+                iteration * 100 / n_iterations_per_epoch,
+                loss_train),
+                end="")
+
+        # At the end of each epoch,
+        # measure the validation loss and accuracy:
+        loss_vals = []
+        acc_vals = []
+        for iteration in range(1, n_iterations_validation + 1):
+            X_batch, y_batch = mnist.validation.next_batch(batch_size)
+            loss_val, acc_val = sess.run(
+                [final_loss, accuracy],
+                feed_dict={X: X_batch.reshape([-1, 28, 28, 1]),
+                           y: y_batch})
+            loss_vals.append(loss_val)
+            acc_vals.append(acc_val)
+            print("\rEvaluating the model: {}/{} ({:.1f}%)".format(
+                iteration, n_iterations_validation,
+                iteration * 100 / n_iterations_validation),
+                end=" " * 10)
+        loss_val = np.mean(loss_vals)
+        acc_val = np.mean(acc_vals)
+        print("\rEpoch: {}  Val accuracy: {:.4f}%  Loss: {:.6f}".format(
+            epoch + 1, acc_val * 100, loss_val))
+
+        # save if improved
+        if loss_val < best_loss_val:
+            print("(improved)")
+            save_path = saver.save(sess, checkpoint_path)
+            best_loss_val = loss_val
