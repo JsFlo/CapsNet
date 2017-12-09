@@ -6,6 +6,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 import numpy as np
 import tensorflow as tf
+import decoder
 
 
 def printShape(tensor):
@@ -206,10 +207,10 @@ def get_round_agreement(round_output, digit_capsule_output, primary_n_caps):
     return agreement
 
 
-X = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
-batch_size = tf.shape(X)[0]
+input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32, name="X")
+batch_size = tf.shape(input_image_batch)[0]
 
-primaryCapsuleOutput = primary_capsule(X)
+primaryCapsuleOutput = primary_capsule(input_image_batch)
 # this is more like "primary capsules digit caps prediction" (1152, 10, 16)
 digitCapsPredictions = digit_caps(primaryCapsuleOutput, batch_size)
 # and this is actually the digit caps output of (10, 16)
@@ -283,32 +284,14 @@ masked_out = tf.multiply(digitCaps_postRouting, reconstruction_mask_reshaped)
 # (10, 16) but only (1, 16) has values because of the above
 
 
-# Decoder will use the 16 dimension vector to reconstruct the image
-print("\nDecoder")
-decoder_input = tf.reshape(masked_out,
-                           [-1, 10 * 16])
-printShape(decoder_input)
-
-n_hidden1 = 512
-n_hidden2 = 1024
+# Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
 n_output = 28 * 28
-hidden1 = tf.layers.dense(decoder_input, n_hidden1,
-                          activation=tf.nn.relu)
-hidden2 = tf.layers.dense(hidden1, n_hidden2,
-                          activation=tf.nn.relu)
-decoder_output = tf.layers.dense(hidden2, n_output,
-                                 activation=tf.nn.sigmoid)
+reconstruction_loss = decoder.get_reconstruction_loss(masked_out, input_image_batch)
 
-# reconstruction loss
-X_flat = tf.reshape(X, [-1, n_output])
-squared_difference = tf.square(X_flat - decoder_output)
-reconstruction_loss = tf.reduce_sum(squared_difference)
-
-# final loss
-alpha = 0.0005
-
-# favor the margin loss
-final_loss = tf.add(margin_loss, alpha * reconstruction_loss)
+# keep it small
+reconstruction_alpha = 0.0005
+# favor the margin loss with a small weight for reconstruction loss
+final_loss = tf.add(margin_loss, reconstruction_alpha * reconstruction_loss)
 
 correct = tf.equal(y, y_pred)
 accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
@@ -318,15 +301,15 @@ training_op = optimizer.minimize(final_loss)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
-n_epochs = 10
-batch_size = 50
+n_epochs = 1#10
+batch_size = 1#50
 restore_checkpoint = True
 
 mnist = input_data.read_data_sets("/tmp/data/")
-n_iterations_per_epoch = mnist.train.num_examples // batch_size
-n_iterations_validation = mnist.validation.num_examples // batch_size
+n_iterations_per_epoch = 1#mnist.train.num_examples // batch_size
+n_iterations_validation = 1#mnist.validation.num_examples // batch_size
 best_loss_val = np.infty
-checkpoint_path = "./my_caps_net"
+checkpoint_path = "./checkpoints/my_caps_net"
 
 with tf.Session() as sess:
     if restore_checkpoint and tf.train.checkpoint_exists(checkpoint_path):
@@ -340,7 +323,7 @@ with tf.Session() as sess:
             # Run the training operation and measure the loss:
             _, loss_train = sess.run(
                 [training_op, final_loss],
-                feed_dict={X: X_batch.reshape([-1, 28, 28, 1]),
+                feed_dict={input_image_batch: X_batch.reshape([-1, 28, 28, 1]),
                            y: y_batch,
                            mask_with_labels: True})
             print("\rIteration: {}/{} ({:.1f}%)  Loss: {:.5f}".format(
@@ -357,7 +340,7 @@ with tf.Session() as sess:
             X_batch, y_batch = mnist.validation.next_batch(batch_size)
             loss_val, acc_val = sess.run(
                 [final_loss, accuracy],
-                feed_dict={X: X_batch.reshape([-1, 28, 28, 1]),
+                feed_dict={input_image_batch: X_batch.reshape([-1, 28, 28, 1]),
                            y: y_batch})
             loss_vals.append(loss_val)
             acc_vals.append(acc_val)
