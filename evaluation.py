@@ -4,6 +4,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 from utils import safe_norm
+import matplotlib
+import matplotlib.pyplot as plt
 
 # Makes them look like static method calls (not python style but helps me :)
 import caps_net_model.model as CapsNetModel
@@ -60,8 +62,8 @@ def get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting, 
 
 
     # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
-    reconstruction_loss = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
-    return reconstruction_loss
+    reconstruction_loss, decoder_output = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
+    return reconstruction_loss, decoder_output
 
 
 def transform_model_output_to_a_single_digit(digitCaps_postRouting):
@@ -100,8 +102,9 @@ def evaluate():
     margin_loss = get_margin_loss(correct_labels_placeholder, digitCaps_postRouting)
     mask_with_labels = tf.placeholder_with_default(False, shape=())
 
-    reconstruction_loss = get_reconstruction_loss(mask_with_labels, correct_labels_placeholder, single_digit_prediction,
-                                                  digitCaps_postRouting, input_image_batch)
+    reconstruction_loss, decoder_output = get_reconstruction_loss(mask_with_labels, correct_labels_placeholder,
+                                                                  single_digit_prediction,
+                                                                  digitCaps_postRouting, input_image_batch)
 
     # keep it small
     reconstruction_alpha = 0.0005
@@ -111,28 +114,60 @@ def evaluate():
     correct = tf.equal(correct_labels_placeholder, single_digit_prediction)
     accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 
+    prediction = True
     saver = tf.train.Saver()
-    with tf.Session() as sess:
-        saver.restore(sess, CHECKPOINT_PATH)
+    if (prediction):
 
-        loss_tests = []
-        acc_tests = []
-        for iteration in range(1, n_iterations_test + 1):
-            X_batch, y_batch = MNIST.test.next_batch(TRAINING_BATCH_SIZE)
+        n_samples = 10
 
-            loss_test, acc_test = sess.run(
-                [final_loss, accuracy],
-                feed_dict={input_image_batch: X_batch.reshape([-1, 28, 28, 1]),
-                           correct_labels_placeholder: y_batch})
-            loss_tests.append(loss_test)
-            acc_tests.append(acc_test)
-            print("\rEvaluating the model: {}/{} ({:.1f}%)".format(
-                iteration, n_iterations_test,
-                iteration * 100 / n_iterations_test),
-                end=" " * 10)
-        loss_test = np.mean(loss_tests)
-        acc_test = np.mean(acc_tests)
-        print("hi")
-        print("\rFinal test accuracy: {:.4f}%  Loss: {:.6f}".format(
-            acc_test * 100, loss_test))
+        sample_images = MNIST.test.images[:n_samples].reshape([-1, 28, 28, 1])
+
+        with tf.Session() as sess:
+            saver.restore(sess, CHECKPOINT_PATH)
+            digitCaps_postRouting_value, decoder_output_value, single_digit_prediction_value = sess.run(
+                [digitCaps_postRouting, decoder_output, single_digit_prediction],
+                feed_dict={input_image_batch: sample_images,
+                           correct_labels_placeholder: np.array([], dtype=np.int64)})
+            sample_images = sample_images.reshape(-1, 28, 28)
+            reconstructions = decoder_output_value.reshape([-1, 28, 28])
+
+            plt.figure(figsize=(300, 7))
+            for index in range(n_samples):
+                plt.subplot(2, n_samples, index + 1)
+                plt.imshow(sample_images[index], cmap="binary")
+                plt.axis("off")
+                plt.title("Label:" + str(MNIST.test.labels[index]))
+
+                plt.subplot(2, n_samples, index + n_samples + 1)
+                plt.imshow(reconstructions[index], cmap="binary")
+                plt.axis("off")
+                plt.title("Predicted:" + str(single_digit_prediction_value[index]))
+
+            plt.show()
+    else:
+        with tf.Session() as sess:
+            saver.restore(sess, CHECKPOINT_PATH)
+
+            loss_tests = []
+            acc_tests = []
+            for iteration in range(1, n_iterations_test + 1):
+                X_batch, y_batch = MNIST.test.next_batch(TRAINING_BATCH_SIZE)
+
+                loss_test, acc_test = sess.run(
+                    [final_loss, accuracy],
+                    feed_dict={input_image_batch: X_batch.reshape([-1, 28, 28, 1]),
+                               correct_labels_placeholder: y_batch})
+                loss_tests.append(loss_test)
+                acc_tests.append(acc_test)
+                print("\rEvaluating the model: {}/{} ({:.1f}%)".format(
+                    iteration, n_iterations_test,
+                    iteration * 100 / n_iterations_test),
+                    end=" " * 10)
+            loss_test = np.mean(loss_tests)
+            acc_test = np.mean(acc_tests)
+            print("hi")
+            print("\rFinal test accuracy: {:.4f}%  Loss: {:.6f}".format(
+                acc_test * 100, loss_test))
+
+
 evaluate()

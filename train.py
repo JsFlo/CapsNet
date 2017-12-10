@@ -66,7 +66,7 @@ def get_reconstruction_loss(mask_with_labels, correct_labels_placeholder, single
 
     # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
     reconstruction_loss, decoder_output = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
-    return reconstruction_loss
+    return reconstruction_loss, decoder_output
 
 
 def transform_model_output_to_a_single_digit(digitCaps_postRouting):
@@ -105,7 +105,7 @@ def train():
     margin_loss = get_margin_loss(correct_labels_placeholder, digitCaps_postRouting)
     mask_with_labels = tf.placeholder_with_default(False, shape=())
 
-    reconstruction_loss = get_reconstruction_loss(mask_with_labels, correct_labels_placeholder, single_digit_prediction,
+    reconstruction_loss, decoder_output = get_reconstruction_loss(mask_with_labels, correct_labels_placeholder, single_digit_prediction,
                                                   digitCaps_postRouting, input_image_batch)
 
     # keep it small
