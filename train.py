@@ -3,7 +3,6 @@ from __future__ import division, print_function, unicode_literals
 import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-from utils import printShape
 from utils import safe_norm
 
 # Makes them look like static method calls (not python style but helps me :)
@@ -28,25 +27,22 @@ def train():
     batch_size = tf.shape(input_image_batch)[0]
 
     digitCaps_postRouting = CapsNetModel.get_model_output(input_image_batch, batch_size)
-
-    print("\nDigit caps post routing")
-    printShape(digitCaps_postRouting)  # (?, 1, 10, 16, 1)
-    print(": ")
+    # (?, 1, 10, 16, 1)
 
     # what we have: 10 16-dimensional vectors
     # what we want: which digit are you predicting ?
 
     # normalize to to get 10 scalars (length of the vectors)
     y_prob = safe_norm(digitCaps_postRouting, axis=-2)
-    printShape(y_prob)  # (", 1, 10, 1)
+    # (", 1, 10, 1)
 
     # get index of longest output vector
     y_prob_argmax = tf.argmax(y_prob, axis=2)
-    printShape(y_prob_argmax)  # (?, 1, 1)
+    # (?, 1, 1)
 
     # we have a 1 x 1 matrix , lets just say 1
     y_pred = tf.squeeze(y_prob_argmax, axis=[1, 2])
-    printShape(y_pred)  # (?, )
+    # (?, )
 
     print("\nLoss")
 
@@ -161,4 +157,6 @@ def train():
                 print("(improved)")
                 save_path = saver.save(sess, CHECKPOINT_PATH)
                 best_loss_val = loss_val
+
+
 train()
