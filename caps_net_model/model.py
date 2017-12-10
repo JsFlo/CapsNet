@@ -77,6 +77,18 @@ def get_model_output_for_predictions(input_image_batch, batch_size):
            correct_labels_placeholder
 
 
+def get_model_output_for_tweak(input_image_batch, batch_size):
+    digitCaps_postRouting, final_loss, correct, \
+    accuracy, optimizer, training_op, mask_with_labels, \
+    decoder_output, single_digit_prediction, correct_labels_placeholder = _get_model_output(input_image_batch,
+                                                                                            batch_size)
+    return digitCaps_postRouting, \
+           decoder_output, \
+           single_digit_prediction, \
+           mask_with_labels, \
+           correct_labels_placeholder
+
+
 # paper used special margin loss to detect more than 1 digit in an image (overachievers)
 def _get_margin_loss(predicted_digit, digitCaps_postRouting):
     m_plus = 0.9
@@ -116,6 +128,8 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
     # mask it! (10, 16) * [0, 0, 1, 0, 0, ...]
     masked_out = tf.multiply(digitCaps_postRouting, reconstruction_mask_reshaped)
+    print("shape!!!!!!: {}".format(masked_out))
+    # masked out
     # (10, 16) but only (1, 16) has values because of the above
 
 
