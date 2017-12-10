@@ -33,11 +33,16 @@ def inf():
             decoder_output = sess.run("output:0", feed_dict={"input:0": a})
             print("Decoder output: {}".format(decoder_output.shape))
 
-            # todo loop over more images
+            print("Len decoder output: {}".format(len(decoder_output)))
+            n_decoder_output = len(decoder_output)
+            idx = 0
             plt.figure(figsize=(300, 7))
-            plt.subplot(2, 1, 1)
-            plt.imshow(decoder_output.reshape([28, 28]), cmap="binary")
-            plt.axis("off")
+            for a_output in decoder_output:
+                plt.subplot(2, n_decoder_output, idx + 1)
+                plt.imshow(a_output.reshape([28, 28]), cmap="binary")
+                plt.axis("off")
+
+                idx += 1
             plt.show()
 
 
