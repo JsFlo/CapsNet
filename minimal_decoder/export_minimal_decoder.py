@@ -1,5 +1,5 @@
 from __future__ import division, print_function, unicode_literals
-
+import os
 import tensorflow as tf
 
 # puts a bad dependency - can only be run from this directory
@@ -18,11 +18,14 @@ parser.add_argument('--model_output', type=str, required=False, default='./model
 parser.add_argument('--model_name', type=str, required=False, default='model_graph.pb')
 FLAGS = parser.parse_args()
 
-
 # CHECKPOINT_PATH = "../checkpoint_with_decoder_tags_67_epoch/my_caps_net"
 # EXPORT_DIR = './model_output'
 # MODEL_NAME = 'decoder_67_v2.pb'
+def create_dirs_if_not_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
+create_dirs_if_not_exists(FLAGS.model_output)
 
 def exportGraph(g, W1, B1, W2, B2, W3, B3):
     with g.as_default():
