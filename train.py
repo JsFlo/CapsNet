@@ -44,8 +44,6 @@ def train():
     y_pred = tf.squeeze(y_prob_argmax, axis=[1, 2])
     # (?, )
 
-    print("\nLoss")
-
     # labels
     y = tf.placeholder(shape=[None], dtype=tf.int64, name="y")
 

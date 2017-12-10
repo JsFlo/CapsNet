@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-from utils import printShape
 from utils import squash
 
 
@@ -55,7 +54,7 @@ def _get_primary_cap_prediction_of_digit_caps(last_layer, batch_size):
 
     # copy paste for batch size to get (BATCH_SIZE, 1152, 10, 16, 8)
     W_tiled = tf.tile(W, [batch_size, 1, 1, 1, 1])
-    printShape(W_tiled)  # (?, 1152, 10, 16, 8)
+    # (?, 1152, 10, 16, 8)
 
     # what we have: Transformation_matrix(BATCH_SIZE, 1152, 10, 16, 8)
     # what we need: Second matrix from last layer (BATCH_SIZE, 1152, 10, 8, 1)
@@ -63,30 +62,26 @@ def _get_primary_cap_prediction_of_digit_caps(last_layer, batch_size):
 
     # (BATCH_SIZE, 1152, 8) -> (BATCH_SIZE, 1152, 8, 1)
     caps1_output_expanded = tf.expand_dims(last_layer, -1)
-    printShape(caps1_output_expanded)
 
     # (BATCH_SIZE, 1152, 8, 1) -> (BATCH_SIZE, 1152, 1, 8, 1)
     caps1_output_tile = tf.expand_dims(caps1_output_expanded, 2)
-    printShape(caps1_output_tile)
 
     # copy paste for digit_n_caps: (BATCH_SIZE, 1152, 1, 8, 1) -> (BATCH_SIZE, 1152, 10, 8, 1)
     caps1_output_tiled = tf.tile(caps1_output_tile, [1, 1, digit_n_caps, 1, 1])
-    printShape(caps1_output_tiled)
 
     digit_caps_predicted = tf.matmul(W_tiled, caps1_output_tiled)
-    printShape(digit_caps_predicted)  # (? , 1152, 10, 16, 1)
+    # (? , 1152, 10, 16, 1)
 
     return digit_caps_predicted
 
 
 def _routing_by_agreement(digit_caps, batch_size):
-    print("Routing by Agreement")
-    printShape(digit_caps)  # (?, 1152, 10, 16, 1)
+    # digitCaps (?, 1152, 10, 16, 1)
 
     # weight for every pair
     raw_weights = tf.zeros([batch_size, digit_caps.shape[1].value, digit_caps.shape[2].value, 1, 1],
                            dtype=np.float32)
-    print("raw weights shape: {}".format(raw_weights.shape))  # (?, 1152, 10, 1, 1)
+    # (?, 1152, 10, 1, 1)
 
     # round 1
     round1_output = _routing_round(raw_weights, digit_caps)
@@ -101,28 +96,23 @@ def _routing_by_agreement(digit_caps, batch_size):
 
 
 def _routing_round(previous_weights, digit_caps_prediction):
-    print("\nRouting Round")
-    print(": Previous weights")
-    printShape(previous_weights)
-    print(": Digit caps prediction")
-    printShape(digit_caps_prediction)
-    print(": ")
-
-    print(": routing weights = softmax on previous weights")
+    # print(": routing weights = softmax on previous weights")
     routing_weights = tf.nn.softmax(previous_weights, dim=2)
+    # (?, 1152, 10, 1, 1)
 
-    print(": weighted predictions = routing weights x digit caps prediction")
+    # print(": weighted predictions = routing weights x digit caps prediction")
     weighted_predictions = tf.multiply(routing_weights, digit_caps_prediction)
-    printShape(weighted_predictions)
+    # (?, 1152, 10, 16, 1)
 
     # Q: When getting weighted predictions why is there no bias ?
 
-    print(": reduce sum of all of them (collapse `rows`)")
+    # print(": reduce sum of all of them (collapse `rows`)")
     weighted_sum = tf.reduce_sum(weighted_predictions, axis=1, keep_dims=True)
-    printShape(weighted_sum)
+    # (?, 1 , 10, 16, 1)
 
-    print(": squash to keep below 1")
+    # print(": squash to keep below 1")
     round_output = squash(weighted_sum, axis=-2)
+    # (?, 1 , 10, 16, 1)
     return round_output
 
 
@@ -148,24 +138,15 @@ def _get_round_agreement(round_output, digit_capsule_output, primary_n_caps):
     :param round_output: (1, 10, 16, 1)
     :param digit_capsule_output: (?, 1152, 10, 16, 1)
     :param primary_n_caps: 1152
-    :return:
+    :return: (?, 1152, 10,1, 1)
     """
-    print("\nRound Agreement")
-    print(": Round Output")
-    printShape(round_output)
-    print(": Digit capsule output")
-    printShape(digit_capsule_output)
-    print(": ")
 
-    print(": Tile round output")
     # the copy&paste
     round_output_tiled = tf.tile(
         round_output, [1, primary_n_caps, 1, 1, 1])
-    printShape(round_output_tiled)
 
-    print(": Scalar Product")
     # that scalar product we talked about above
     agreement = tf.matmul(digit_capsule_output, round_output_tiled, transpose_a=True)
-    printShape(agreement)
+    # (?, 1152, 10, 1, 1)
 
     return agreement

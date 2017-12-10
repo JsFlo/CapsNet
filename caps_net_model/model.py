@@ -1,5 +1,4 @@
-import primary_capsules as PrimaryCapsules
-import digit_capsules as DigitCapsules
+from caps_net_model import primary_capsules as PrimaryCapsules, digit_capsules as DigitCapsules
 
 
 def get_model_output(input_image_batch, batch_size):
