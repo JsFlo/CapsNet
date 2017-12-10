@@ -1,21 +1,31 @@
 from __future__ import division, print_function, unicode_literals
 
 import tensorflow as tf
-from tensorflow.examples.tutorials.mnist import input_data
+
+# puts a bad dependency - can only be run from this directory
+import sys
+
+sys.path.append('../')
 
 # Makes them look like static method calls (not python style but helps me :)
 import caps_net_model.model as CapsNetModel
+import argparse
 
-MNIST = input_data.read_data_sets("/tmp/data/")
+parser = argparse.ArgumentParser()
+parser.add_argument('--checkpoint', type=str, required=True,
+                    help='Path to CHECKPOINT_NAME file (without ext) ([CHECKPOINT_NAME].meta, [CHECKPOINT_NAME].index, etc).')
+parser.add_argument('--model_output', type=str, required=False, default='./model_output')
+parser.add_argument('--model_name', type=str, required=False, default='model_graph.pb')
+FLAGS = parser.parse_args()
 
-CHECKPOINT_PATH = "./checkpoint_with_decoder_tags_67_epoch/my_caps_net"
-EXPORT_DIR = './minimal_decoder_67_epoch'
-MODEL_NAME = 'decoder_67_v2.pb'
+
+# CHECKPOINT_PATH = "../checkpoint_with_decoder_tags_67_epoch/my_caps_net"
+# EXPORT_DIR = './model_output'
+# MODEL_NAME = 'decoder_67_v2.pb'
 
 
 def exportGraph(g, W1, B1, W2, B2, W3, B3):
     with g.as_default():
-        # ", shape=(?, 1, 10, 16, 1), dtype=float32)
         masked_input = tf.placeholder(dtype="float32", shape=[None, 1, 10, 16, 1], name="input")
         decoder_input = tf.reshape(masked_input, [-1, 10 * 16])
 
@@ -42,10 +52,10 @@ def exportGraph(g, W1, B1, W2, B2, W3, B3):
         sess.run(init)
 
         graph_def = g.as_graph_def()
-        tf.train.write_graph(graph_def, EXPORT_DIR, MODEL_NAME, as_text=False)
+        tf.train.write_graph(graph_def, FLAGS.model_output, FLAGS.model_name, as_text=False)
 
 
-def predict():
+def restore_export():
     input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32)
     batch_size = tf.shape(input_image_batch)[0]
 
@@ -57,14 +67,15 @@ def predict():
 
     all_var = tf.trainable_variables()
     decoder_weights = [var for var in all_var if 'decoder' in var.name]
+    print("Decoder Weights")
     for weight_tensor in decoder_weights:
-        print(weight_tensor.shape)
+        print("Tensors shapes: {}".format(weight_tensor.shape))
 
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
         # restore
-        saver.restore(sess, CHECKPOINT_PATH)
+        saver.restore(sess, FLAGS.checkpoint)
 
         # save out small model
         W1 = decoder_weights[0].eval(sess)
@@ -81,4 +92,4 @@ def predict():
     exportGraph(g, W1, B1, W2, B2, W3, B3)
 
 
-predict()
+restore_export()
