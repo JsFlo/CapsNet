@@ -87,7 +87,7 @@ def get_model_output_for_tweak(input_image_batch, batch_size):
            decoder_output, \
            single_digit_prediction, \
            mask_with_labels, \
-           correct_labels_placeholder
+           correct_labels_placeholder, masked_out
 
 
 # paper used special margin loss to detect more than 1 digit in an image (overachievers)
