@@ -27,9 +27,10 @@ def _get_model_output(input_image_batch, batch_size):
     margin_loss = _get_margin_loss(correct_labels_placeholder, digitCaps_postRouting)
     mask_with_labels = tf.placeholder_with_default(False, shape=())
 
-    reconstruction_loss, decoder_output = _get_reconstruction_loss(mask_with_labels, correct_labels_placeholder,
-                                                                   single_digit_prediction,
-                                                                   digitCaps_postRouting, input_image_batch)
+    reconstruction_loss, decoder_output, masked_out = _get_reconstruction_loss(mask_with_labels,
+                                                                               correct_labels_placeholder,
+                                                                               single_digit_prediction,
+                                                                               digitCaps_postRouting, input_image_batch)
 
     # keep it small
     reconstruction_alpha = 0.0005
@@ -43,13 +44,13 @@ def _get_model_output(input_image_batch, batch_size):
 
     return digitCaps_postRouting, final_loss, correct, \
            accuracy, optimizer, training_op, mask_with_labels, \
-           decoder_output, single_digit_prediction, correct_labels_placeholder
+           decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out
 
 
 def get_model_output_for_training(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder = _get_model_output(input_image_batch,
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
                                                                                             batch_size)
 
     return digitCaps_postRouting, final_loss, correct, \
@@ -60,7 +61,7 @@ def get_model_output_for_training(input_image_batch, batch_size):
 def get_model_output_for_evaluation(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder = _get_model_output(input_image_batch,
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
                                                                                             batch_size)
 
     return final_loss, accuracy, correct_labels_placeholder
@@ -69,18 +70,18 @@ def get_model_output_for_evaluation(input_image_batch, batch_size):
 def get_model_output_for_predictions(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder = _get_model_output(input_image_batch,
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
                                                                                             batch_size)
     return digitCaps_postRouting, \
            decoder_output, \
            single_digit_prediction, \
-           correct_labels_placeholder
+           correct_labels_placeholder, masked_out
 
 
 def get_model_output_for_tweak(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder = _get_model_output(input_image_batch,
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
                                                                                             batch_size)
     return digitCaps_postRouting, \
            decoder_output, \
@@ -135,7 +136,7 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
     # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
     reconstruction_loss, decoder_output = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
-    return reconstruction_loss, decoder_output
+    return reconstruction_loss, decoder_output, masked_out
 
 
 def _transform_model_output_to_a_single_digit(digitCaps_postRouting):

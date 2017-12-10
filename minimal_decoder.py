@@ -1,7 +1,5 @@
 from __future__ import division, print_function, unicode_literals
 
-import matplotlib.pyplot as plt
-import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
@@ -10,18 +8,15 @@ import caps_net_model.model as CapsNetModel
 
 MNIST = input_data.read_data_sets("/tmp/data/")
 
-CHECKPOINT_PATH = "./checkpoints/my_caps_net"
-NUM_SAMPLES = 3
-CAPS2_N_DIMS = 16
-CAPS2_N_CAPS = 10
-EXPORT_DIR = './minimal_decoder'
-MODEL_NAME = 'base_try.pb'
+CHECKPOINT_PATH = "./checkpoint_with_decoder_tags_67_epoch/my_caps_net"
+EXPORT_DIR = './minimal_decoder_67_epoch'
+MODEL_NAME = 'decoder_67_v2.pb'
 
 
 def exportGraph(g, W1, B1, W2, B2, W3, B3):
     with g.as_default():
         # ", shape=(?, 1, 10, 16, 1), dtype=float32)
-        masked_input = tf.placeholder(dtype="float32", shape=[None, 1, 10, 16, 1])
+        masked_input = tf.placeholder(dtype="float32", shape=[None, 1, 10, 16, 1], name="input")
         decoder_input = tf.reshape(masked_input, [-1, 10 * 16])
 
         WC1 = tf.constant(W1, name="WC1")
@@ -34,8 +29,14 @@ def exportGraph(g, W1, B1, W2, B2, W3, B3):
         hidden2 = tf.nn.relu(tf.matmul(hidden1, WC2) + BC2)
         WC3 = tf.constant(W3, name="WC3")
         BC3 = tf.constant(B3, name="BC3")
-        decoder_output = tf.nn.relu(tf.matmul(hidden2, WC3) + BC3, name="output")
-
+        decoder_output = tf.nn.sigmoid(tf.matmul(hidden2, WC3) + BC3, name="output")
+        #
+        # hidden1 = tf.layers.dense(decoder_input, 512, kernel_initializer=WC1, bias_initializer=BC1,
+        #                           activation=tf.nn.relu)
+        # hidden2 = tf.layers.dense(hidden1, 1024, kernel_initializer=WC2, bias_initializer=BC2,
+        #                           activation=tf.nn.relu)
+        # decoder_output = tf.layers.dense(hidden2, 28 * 28, kernel_initializer=WC3, bias_initializer=BC3,
+        #                                  activation=tf.nn.sigmoid)
         sess = tf.Session()
         init = tf.initialize_all_variables()
         sess.run(init)
