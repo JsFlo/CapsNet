@@ -23,7 +23,7 @@ def get_reconstruction_loss(capsules, target_images):
     squared_difference = tf.square(X_flat - decoder_output)
     reconstruction_loss = tf.reduce_sum(squared_difference)
 
-    return reconstruction_loss
+    return reconstruction_loss, decoder_output
 
 
 def _get_tf_layers_impl(decoder_input, target,
