@@ -3,7 +3,6 @@ package fhc.tfsandbox.capsnettweak
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import fhc.tfsandbox.capsnettweak.classifier.NodeDef
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 import java.nio.FloatBuffer
 
@@ -12,8 +11,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val outputNodeDef = NodeDef("output", FloatArray(784).toTypedArray())
 
         val tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")
 
@@ -87,8 +84,8 @@ class MainActivity : AppCompatActivity() {
         tfInference.feed("input:0", floatBuffer, *reshape(intArrayOf(1, 1, 10, 16, 1).toTypedArray().toIntArray()))
 
         // fetch
-        val floatOutputs = outputNodeDef.shape.toFloatArray()
-        tfInference.run(arrayOf(outputNodeDef.name))
+        val floatOutputs = FloatArray(784).toTypedArray().toFloatArray()
+        tfInference.run(arrayOf("output"))
         tfInference.fetch("output", floatOutputs)
         floatOutputs.forEach { Log.d("test", "$it") }
 
