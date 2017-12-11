@@ -3,6 +3,7 @@ package fhc.tfsandbox.capsnettweak
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import kotlinx.android.synthetic.main.activity_main.*
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 import java.nio.FloatBuffer
 
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity() {
         tfInference.fetch("output", floatOutputs)
         floatOutputs.forEach { Log.d("test", "$it") }
 
+        image_view.setArray(floatOutputs)
         //Bitmap.createBitmap(28,28, Bitmap.Config.ALPHA_8)
         // You are using RGBA that's why Config is ARGB.8888
 //        val bitmap = Bitmap.createBitmap(28, 28, Bitmap.Config.ARGB_8888);
