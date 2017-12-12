@@ -1,4 +1,4 @@
-package fhc.tfsandbox.capsnettweak.ui
+package fhc.tfsandbox.capsnettweak.capsule_tweak
 
 import android.content.Context
 import android.graphics.Color
