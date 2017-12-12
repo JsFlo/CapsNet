@@ -1,0 +1,62 @@
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="6dp"
+    android:layout_marginTop="6dp"
+    android:background="@color/primary_light"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp">
+        <!-- source image-->
+        <ImageView
+            android:id="@+id/pr_source_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@color/light_blue"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/pr_source_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/source_label"
+            android:textColor="@color/secondary_text"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/pr_capsule_image"
+            app:layout_constraintStart_toEndOf="@id/pr_source_image"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/pr_real_digit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="5"
+            android:textColor="@color/secondary_text"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!--capsule-->
+        <ImageView
+            android:id="@+id/pr_capsule_image"
+            android:layout_width="24dp"
+            android:layout_height="48dp"
+            android:background="@color/medium_sea_green"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/pr_real_digit"
+            app:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
+
+
+</android.support.constraint.ConstraintLayout>

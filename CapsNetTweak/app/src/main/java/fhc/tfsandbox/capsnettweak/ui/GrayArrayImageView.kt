@@ -1,11 +1,9 @@
-package fhc.tfsandbox.capsnettweak
+package fhc.tfsandbox.capsnettweak.ui
 
 import android.content.Context
 import android.graphics.Color
 import android.graphics.*
-import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 
 class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
@@ -58,7 +56,7 @@ class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context
         val f = ColorMatrixColorFilter(cm)
         mPaint.setColorFilter(f)
         mPaint.color = Color.BLACK
-        mOffscreenBitmap = Bitmap.createBitmap(28, 28, Bitmap.Config.ARGB_8888)
+        mOffscreenBitmap = Bitmap.createBitmap(28, 28, Bitmap.Config.RGB_565)
         mOffscreenCanvas = Canvas(mOffscreenBitmap)
     }
 
