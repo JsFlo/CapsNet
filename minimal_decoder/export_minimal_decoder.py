@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 # puts a bad dependency - can only be run from this directory
 import sys
+import sqlite3
 
 sys.path.append('../')
 
@@ -28,6 +29,9 @@ MASKED_OUT_NPY_FILENAME = "masked_output.npy"
 SOURCE_IMAGES_OUTPUT_PATH = FLAGS.model_output + "/source_images/"
 SOURCE_IMAGES_NPY_FILENAME = "source_images.npy"
 
+DATABASE_PATH = FLAGS.model_output + "/database/"
+DATABASE_NAME = "minimal_decoder.db"
+
 
 # CHECKPOINT_PATH = "../checkpoint_with_decoder_tags_67_epoch/my_caps_net"
 # EXPORT_DIR = './model_output'
@@ -40,6 +44,7 @@ def create_dirs_if_not_exists(path):
 create_dirs_if_not_exists(FLAGS.model_output)
 create_dirs_if_not_exists(MASKED_OUTPUT_PATH)
 create_dirs_if_not_exists(SOURCE_IMAGES_OUTPUT_PATH)
+create_dirs_if_not_exists(DATABASE_PATH)
 
 
 def exportGraph(g, W1, B1, W2, B2, W3, B3):
@@ -73,6 +78,32 @@ def exportGraph(g, W1, B1, W2, B2, W3, B3):
         tf.train.write_graph(graph_def, FLAGS.model_output, FLAGS.model_name, as_text=False)
 
 
+def init_database(conn):
+    conn.execute('''CREATE TABLE IF NOT EXISTS digit_caps
+                 (cap_id INTEGER, prediction_row INTEGER, real_digit INTEGER,
+                  param_0 real, param_1 real,param_2 real, param_3 real, param_4 real,param_5 real, param_6 real, param_7 real,
+                  param_8 real, param_9 real,param_10 real, param_11 real, param_12 real,param_13 real, param_14 real, param_15 real)''')
+
+
+def write_to_database(conn, array_array_capsules, source_labels):
+    print("inputs: {}".format(array_array_capsules.shape))
+    for prediction_row_wrapper_id, prediction_row_wrapper in enumerate(array_array_capsules):
+        print("prediction row wrapper: {}".format(prediction_row_wrapper.shape))
+        real_digit = source_labels[prediction_row_wrapper_id]
+        for prediction_row_id, prediction_row in enumerate(prediction_row_wrapper):
+            for cap_id, capsule in enumerate(prediction_row):
+                print("capsule: {}".format(capsule.shape))
+                conn.execute(
+                    "INSERT INTO digit_caps VALUES ({},{},{}, {},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{})"
+                        .format(cap_id, prediction_row_wrapper_id, real_digit,
+                                capsule[0, 0], capsule[1, 0], capsule[2, 0], capsule[3, 0],
+                                capsule[4, 0], capsule[5, 0], capsule[6, 0], capsule[7, 0],
+                                capsule[8, 0], capsule[9, 0], capsule[10, 0], capsule[11, 0],
+                                capsule[12, 0], capsule[13, 0], capsule[14, 0], capsule[15, 0]))
+                print("wrapper: {}, row: {}, caps: {}"
+                      .format(prediction_row_wrapper_id, prediction_row_id, cap_id))
+
+
 def restore_export():
     input_image_batch = tf.placeholder(shape=[None, 28, 28, 1], dtype=tf.float32)
     batch_size = tf.shape(input_image_batch)[0]
@@ -90,7 +121,8 @@ def restore_export():
         print("Tensors shapes: {}".format(weight_tensor.shape))
 
     saver = tf.train.Saver()
-    source_images = MNIST.test.images[:FLAGS.masked_capsules].reshape([-1, 28, 28, 1])
+    # source_images = MNIST.test.images[:FLAGS.masked_capsules].reshape([-1, 28, 28, 1])
+    source_images, source_labels = MNIST.train.next_batch(FLAGS.masked_capsules)
 
     with tf.Session() as sess:
         # restore
@@ -99,14 +131,21 @@ def restore_export():
         # save minimal decoder input
         digitCaps_postRouting_value, decoder_output_value, single_digit_prediction_value, masked_out_value = sess.run(
             [digitCaps_postRouting, decoder_output, single_digit_prediction, masked_out],
-            feed_dict={input_image_batch: source_images,
+            feed_dict={input_image_batch: source_images.reshape([-1, 28, 28, 1]),
                        correct_labels_placeholder: np.array([], dtype=np.int64)})
 
         print("Masked capsules shape: {}".format(masked_out_value.shape))
+        # save outputs
         np.save(MASKED_OUTPUT_PATH + MASKED_OUT_NPY_FILENAME, masked_out_value)
         np.save(SOURCE_IMAGES_OUTPUT_PATH + SOURCE_IMAGES_NPY_FILENAME, source_images)
+        # write to db
+        conn = sqlite3.connect(DATABASE_PATH + DATABASE_NAME)
+        init_database(conn)
+        write_to_database(conn, masked_out_value, source_labels)
+        conn.commit()
+        conn.close()
 
-        # save out small model
+        # save out small model weights, freeze
         W1 = decoder_weights[0].eval(sess)
         B1 = decoder_weights[1].eval(sess)
 
