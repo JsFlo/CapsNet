@@ -1,19 +1,38 @@
 package fhc.tfsandbox.capsnettweak
 
+import android.Manifest
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import fhc.tfsandbox.capsnettweak.database.CapsuleDatabase
 import kotlinx.android.synthetic.main.activity_main.*
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 import java.nio.FloatBuffer
+import android.support.v4.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.Manifest.permission
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Activity
+
+
+fun String.debugPrint() {
+    Log.d("test", this)
+}
 
 class MainActivity : AppCompatActivity() {
+    // Storage Permissions variables
+    private val REQUEST_EXTERNAL_STORAGE = 1
+    private val PERMISSIONS_STORAGE = arrayOf<String>(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")
+        verifyStoragePermissions(this)
 
 //        // 16 dimensions
 //        val caps1: FloatArray = floatArrayOf(10f, 2f, 34f, 45f, 52f, 62f, 70f, 8f,
@@ -81,6 +100,8 @@ class MainActivity : AppCompatActivity() {
         val floatBuffer = FloatBuffer.wrap(input, 0, 160)
 
 
+        //val db = CapsuleDatabase.getCapsuleDatabase(this)
+        //Log.d("test", "username: " + db.getUserNameFromDB())
         // feed
         tfInference.feed("input:0", floatBuffer, *reshape(intArrayOf(1, 1, 10, 16, 1).toTypedArray().toIntArray()))
 
@@ -134,4 +155,35 @@ class MainActivity : AppCompatActivity() {
                 10f, 2f, 34f, 45f, 52f, 62f, 70f, 8f,
                 84f, 75f, 62f, 52f, 40f, 3f, 24f, 15f).toFloatArray()
     }
+
+    //persmission method.
+    fun verifyStoragePermissions(activity: Activity) {
+        if (!hasPermisssions(activity)) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            )
+        } else {
+            "has permissions"
+            CapsuleDatabase.copyDataBase(this)
+        }
+    }
+
+    fun hasPermisssions(activity: Activity): Boolean {
+        // Check if we have read or write permission
+        val writePermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val readPermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
+
+        return writePermission == PackageManager.PERMISSION_GRANTED && readPermission == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        "on request".debugPrint()
+        CapsuleDatabase.copyDataBase(this)
+    }
+
+
 }
