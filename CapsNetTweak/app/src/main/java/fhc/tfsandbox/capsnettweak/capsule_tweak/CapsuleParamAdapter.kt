@@ -30,54 +30,31 @@ class CapsuleParamAdapter(private val capsule: Capsule)
 
     override fun getItemCount(): Int = capsuleParams.size
 
-    override fun onCapsuleParamChanged(adapterPosition: Int, newValue: Int) {
-        capsuleParams[adapterPosition] = newValue / 100f
+    override fun onCapsuleParamChanged(adapterPosition: Int, newValue: Float) {
+        capsuleParams[adapterPosition] = newValue
     }
 
 }
 
-class CapsuleParamViewHolder(itemView: View, private val listener: CapsuleParamListener) : RecyclerView.ViewHolder(itemView), SeekBar.OnSeekBarChangeListener {
+class CapsuleParamViewHolder(itemView: View, private val listener: CapsuleParamListener)
+    : RecyclerView.ViewHolder(itemView), CustomValuePicker.CustomValuePickerListener {
+
     interface CapsuleParamListener {
-        fun onCapsuleParamChanged(adapterPosition: Int, newValue: Int)
+        fun onCapsuleParamChanged(adapterPosition: Int, newValue: Float)
     }
 
-    // because total 200 (first 100 for negative)
-    private val POSITIVE_NUMBER_OFFSET = 100
-
     init {
-        // 100 for negative 100 for positive
-        itemView.cp_seekbar.max = 200
+        itemView.cp_value_picker.setListener(this)
     }
 
     fun onBindViewHolder(listPosition: Int, rawInput: Float) {
         itemView.cp_param_idx.text = listPosition.toString()
-        itemView.cp_updated_value.text = rawInput.toString()
-
         // don't tell anyone I'm about to update you
-        itemView.cp_seekbar.setOnSeekBarChangeListener(null)
-        itemView.cp_seekbar.progress = getProgress(rawInput)
-        itemView.cp_seekbar.setOnSeekBarChangeListener(this)
+        itemView.cp_value_picker.setProgress(rawInput, true)
     }
 
-    // converts 0.0 - 1.0 into 0 - 200
-    // TODO: color needs to go from mid
-    private fun getProgress(rawInput: Float): Int {
-        val hundredBasedInput = (rawInput * 100).toInt()
-        // +
-        return if (rawInput > 0) {
-            POSITIVE_NUMBER_OFFSET + hundredBasedInput
-        } else { // -
-            100 - hundredBasedInput
-        }
+    override fun onValueUpdated(negativeOneToOneFloat: Float) {
+        listener.onCapsuleParamChanged(adapterPosition, negativeOneToOneFloat)
     }
 
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {}
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {
-        seekBar?.let {
-            listener.onCapsuleParamChanged(adapterPosition, it.progress)
-        }
-    }
 }
