@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.view.MenuItem
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.common.feed
@@ -27,6 +28,8 @@ class TweakActivity : AppCompatActivity() {
     private lateinit var predictionRow: PredictionRow
     private lateinit var tfInference: TensorFlowInferenceInterface
 
+    private lateinit var adapter: CapsuleParamAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweak)
@@ -46,6 +49,12 @@ class TweakActivity : AppCompatActivity() {
 
         // get tf inference
         tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")
+
+        // pull out the 1 capsule that has data
+        val focusedCapsule = predictionRow.capsules[predictionRow.realDigit]
+        adapter = CapsuleParamAdapter(focusedCapsule)
+        tweak_rv.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        tweak_rv.adapter = adapter
 
         runInference(predictionRow)
     }

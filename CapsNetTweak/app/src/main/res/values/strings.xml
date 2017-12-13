@@ -2,4 +2,5 @@
     <string name="app_name">CapsNetTweak</string>
     <string name="source_label">Source Image to Capsules</string>
     <string name="reconstruction">Reconstruction</string>
+    <string name="reconstruct_label">Reconstruct</string>
 </resources>

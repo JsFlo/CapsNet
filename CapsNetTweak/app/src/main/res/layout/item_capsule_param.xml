@@ -1,5 +1,6 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="6dp"
@@ -16,25 +17,37 @@
         android:paddingRight="8dp">
 
         <TextView
-            android:id="@+id/cp_param_id"
+            android:id="@+id/cp_param_idx"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/source_label"
             android:textColor="@color/dark_gray"
-            android:textSize="24sp"
+            android:textSize="32sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="0" />
+
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/cp_seekbar"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/cp_updated_value"
+            app:layout_constraintStart_toEndOf="@id/cp_param_idx"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/pr_real_digit"
+            android:id="@+id/cp_updated_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:text="5"
             android:textColor="@color/secondary_text"
-            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textStyle="italic"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

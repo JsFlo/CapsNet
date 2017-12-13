@@ -7,13 +7,46 @@
     tools:context=".capsule_tweak.TweakActivity">
 
 
-    <fhc.tfsandbox.capsnettweak.capsule_tweak.GrayArrayImageView
-        android:id="@+id/image_view"
+    <android.support.percent.PercentRelativeLayout
+        android:id="@+id/image_view_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/black"
+        android:layout_height="wrap_content">
+
+        <fhc.tfsandbox.capsnettweak.capsule_tweak.GrayArrayImageView
+            android:id="@+id/image_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/black"
+            app:layout_aspectRatio="178%"
+            app:layout_widthPercent="100%" />
+
+    </android.support.percent.PercentRelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/button_holder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/image_view_wrapper">
 
+        <Button
+            android:id="@+id/reconstruct_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:elevation="16dp"
+            android:text="@string/reconstruct_label" />
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/tweak_rv"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorPrimary"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_holder" />
 </android.support.constraint.ConstraintLayout>
