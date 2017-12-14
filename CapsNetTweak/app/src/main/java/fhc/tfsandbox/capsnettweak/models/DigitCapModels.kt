@@ -23,5 +23,4 @@ data class PredictionRow(val capsules: List<Capsule>) : Parcelable {
         get() = capsules[0].real_digit
 }
 
-
-data class Predictions(val predictionRows: Prediction)
+data class ShapeDimensions(val intArray: IntArray)

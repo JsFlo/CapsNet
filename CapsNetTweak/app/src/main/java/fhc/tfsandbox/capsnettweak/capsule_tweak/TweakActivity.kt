@@ -6,15 +6,17 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.view.MenuItem
+import android.view.View
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.common.feed
 import fhc.tfsandbox.capsnettweak.common.runAndFetch
 import fhc.tfsandbox.capsnettweak.models.PredictionRow
 import fhc.tfsandbox.capsnettweak.models.ShapeDimensions
 import kotlinx.android.synthetic.main.activity_tweak.*
+import kotlinx.coroutines.experimental.launch
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 
-class TweakActivity : AppCompatActivity() {
+class TweakActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
         const val EXTRA_PREDICTION_ROW = "EXTRA_PREDICTION_ROW"
@@ -33,7 +35,6 @@ class TweakActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweak)
-        // title
         title = "Reconstruction"
         supportActionBar?.let {
             it.setHomeButtonEnabled(true)
@@ -56,14 +57,31 @@ class TweakActivity : AppCompatActivity() {
         tweak_rv.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         tweak_rv.adapter = adapter
 
-        runInference(predictionRow)
+        with(reconstruct_button) {
+            isEnabled = false
+            setOnClickListener(this@TweakActivity)
+        }
+        launch { runInference(predictionRow) }
     }
 
-    private fun runInference(inferencePredictionRow: PredictionRow) {
+    suspend private fun runInference(inferencePredictionRow: PredictionRow) {
         tfInference.feed("input:0", inferencePredictionRow, ShapeDimensions(intArrayOf(1, 1, 10, 16, 1)))
         val floatOutputs = FloatArray(784).toTypedArray().toFloatArray()
         tfInference.runAndFetch("output", floatOutputs)
-        image_view.setArray(floatOutputs)
+
+        runOnUiThread {
+            image_view.setArray(floatOutputs)
+            reconstruct_button.isEnabled = true
+        }
+    }
+
+    override fun onClick(v: View?) {
+        reconstruct_button.isEnabled = false
+        val updatedCapsule = adapter.getUpdatedCapsule()
+
+        val updatedPredictionRow = ArrayList(predictionRow.capsules)
+        updatedPredictionRow[predictionRow.realDigit] = updatedCapsule
+        launch { runInference(PredictionRow(updatedPredictionRow)) }
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

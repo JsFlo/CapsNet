@@ -3,7 +3,6 @@ package fhc.tfsandbox.capsnettweak.capsule_select
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.capsule_tweak.TweakActivity
@@ -32,7 +31,7 @@ class MainActivity : AppCompatActivity(), PredictionRowAdapter.PredictionRowAdap
     private fun onDbReady(capsuleDatabase: CapsuleDatabase) {
         val capsules = capsuleDatabase.getAllPredictionRows()
         val adapter = PredictionRowAdapter(capsules, this)
-        prediction_row_rv.layoutManager = GridLayoutManager(this, 2)//LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        prediction_row_rv.layoutManager = GridLayoutManager(this, 2)
         prediction_row_rv.adapter = adapter
     }
 
