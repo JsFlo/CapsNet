@@ -2,6 +2,11 @@ from __future__ import division, print_function, unicode_literals
 import os
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+import io
+import scipy.misc
+
 # puts a bad dependency - can only be run from this directory
 import sys
 import sqlite3
@@ -78,30 +83,49 @@ def exportGraph(g, W1, B1, W2, B2, W3, B3):
         tf.train.write_graph(graph_def, FLAGS.model_output, FLAGS.model_name, as_text=False)
 
 
+def write_db(conn, array_array_capsules, source_labels, source_images):
+    write_digit_caps_(conn, array_array_capsules, source_labels)
+    write_prediction(conn, source_images, source_labels)
+
+
 def init_database(conn):
     conn.execute('''CREATE TABLE IF NOT EXISTS digit_caps
-                 (cap_id INTEGER, prediction_row INTEGER, real_digit INTEGER,
+                 (cap_id INTEGER, prediction_row INTEGER,
                   param_0 real, param_1 real,param_2 real, param_3 real, param_4 real,param_5 real, param_6 real, param_7 real,
                   param_8 real, param_9 real,param_10 real, param_11 real, param_12 real,param_13 real, param_14 real, param_15 real)''')
 
+    conn.execute('''CREATE TABLE IF NOT EXISTS prediction
+                     (prediction_row INTEGER, real_digit INTEGER, image_bytes blob)''')
 
-def write_to_database(conn, array_array_capsules, source_labels):
-    print("inputs: {}".format(array_array_capsules.shape))
+
+def write_prediction(conn, source_images, source_labels):
+    for id, test_image in enumerate(source_images):
+        real_digit = source_labels[id]
+        print("real digit: {}".format(real_digit))
+        img = scipy.misc.toimage(test_image.reshape(28, 28), cmin=-1.0, cmax=1.0)
+        stream = io.BytesIO()
+        img.save(stream, format="PNG")
+        # img.show()
+        conn.execute("INSERT INTO prediction VALUES(?,?,?)", (id, int(real_digit), stream.getvalue()))
+        stream.close()
+
+
+def write_digit_caps_(conn, array_array_capsules, source_labels):
     for prediction_row_wrapper_id, prediction_row_wrapper in enumerate(array_array_capsules):
-        print("prediction row wrapper: {}".format(prediction_row_wrapper.shape))
-        real_digit = source_labels[prediction_row_wrapper_id]
         for prediction_row_id, prediction_row in enumerate(prediction_row_wrapper):
             for cap_id, capsule in enumerate(prediction_row):
-                print("capsule: {}".format(capsule.shape))
                 conn.execute(
-                    "INSERT INTO digit_caps VALUES ({},{},{}, {},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{})"
-                        .format(cap_id, prediction_row_wrapper_id, real_digit,
-                                capsule[0, 0], capsule[1, 0], capsule[2, 0], capsule[3, 0],
-                                capsule[4, 0], capsule[5, 0], capsule[6, 0], capsule[7, 0],
-                                capsule[8, 0], capsule[9, 0], capsule[10, 0], capsule[11, 0],
-                                capsule[12, 0], capsule[13, 0], capsule[14, 0], capsule[15, 0]))
-                print("wrapper: {}, row: {}, caps: {}"
-                      .format(prediction_row_wrapper_id, prediction_row_id, cap_id))
+                    "INSERT INTO digit_caps VALUES (?,?,"
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (cap_id, prediction_row_wrapper_id,
+                                                         float(capsule[0, 0]), float(capsule[1, 0]),
+                                                         float(capsule[2, 0]), float(capsule[3, 0]),
+                                                         float(capsule[4, 0]), float(capsule[5, 0]),
+                                                         float(capsule[6, 0]), float(capsule[7, 0]),
+                                                         float(capsule[8, 0]), float(capsule[9, 0]),
+                                                         float(capsule[10, 0]), float(capsule[11, 0]),
+                                                         float(capsule[12, 0]), float(capsule[13, 0]),
+                                                         float(capsule[14, 0]),
+                                                         float(capsule[15, 0])))
 
 
 def restore_export():
@@ -141,7 +165,7 @@ def restore_export():
         # write to db
         conn = sqlite3.connect(DATABASE_PATH + DATABASE_NAME)
         init_database(conn)
-        write_to_database(conn, masked_out_value, source_labels)
+        write_db(conn, masked_out_value, source_labels, source_images)
         conn.commit()
         conn.close()
 
