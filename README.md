@@ -2,11 +2,15 @@
 
 A Tensorflow implementation of the recently published Capsule Network that allows you to separate/export the `decoder`.
 
+Capsule Network: <img src="images/fig1.png" width="200">
+
+Decoder:  <img src="images/fig2.png" width="200">  
+
 The `decoder` is found at the end of Capsule Networks and used to recreate the source images. The capsule network is trained taking this **reconstruction loss** into consideration which means that the Capsule Network will learn to give capsules meaningful parameters.
 
 The paper, [*Dynamic Routing Between Capsules*](https://arxiv.org/abs/1710.09829), shows some modification of these Capsule dimensions/parameters.
 
-EXAMPLE FIG 4 FROM PAPER
+<img src="images/fig4.png" width="600">
 
 After exporting the `decoder` (freezing and exporting only the data/graph structure associated with it) I imported the model to an Android app (**./CapsNetTweak**).
 
@@ -27,8 +31,6 @@ Goals of the project:
 
 The new algorithm is described in the recently published papers([*Dynamic Routing Between Capsules*](https://arxiv.org/abs/1710.09829), [*Matrix Capsules with EM Routing*](https://arxiv.org/abs/1710.09829)) by Geoffrey Hinton and team.
 
-IMAGE OF NETWORK
-IMAGE OF APP
 ## Flow overview
 1. Train a model and get a **checkpoint file**
 2. Separate and **export** only the **decoder** section of the Capsule Network
