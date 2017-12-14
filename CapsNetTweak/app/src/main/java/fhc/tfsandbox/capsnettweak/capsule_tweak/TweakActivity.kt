@@ -10,6 +10,7 @@ import android.view.View
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.common.feed
 import fhc.tfsandbox.capsnettweak.common.runAndFetch
+import fhc.tfsandbox.capsnettweak.database.CapsuleDatabase
 import fhc.tfsandbox.capsnettweak.models.PredictionRow
 import fhc.tfsandbox.capsnettweak.models.ShapeDimensions
 import kotlinx.android.synthetic.main.activity_tweak.*
@@ -19,15 +20,19 @@ import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 class TweakActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
-        const val EXTRA_PREDICTION_ROW = "EXTRA_PREDICTION_ROW"
-        fun newIntent(context: Context, predictionRow: PredictionRow): Intent {
+        const val EXTRA_PREDICTION_ROW_ID = "EXTRA_PREDICTION_ROW"
+        const val EXTRA_REAL_DIGIT = "EXTRA_REAL_DIGIT"
+        fun newIntent(context: Context, predictionRow: Int, realDigit: Int): Intent {
             val intent = Intent(context, TweakActivity::class.java)
-            intent.putExtra(EXTRA_PREDICTION_ROW, predictionRow)
+            intent.putExtra(EXTRA_PREDICTION_ROW_ID, predictionRow)
+            intent.putExtra(EXTRA_REAL_DIGIT, realDigit)
             return intent
         }
     }
 
     private lateinit var predictionRow: PredictionRow
+    private var realDigit: Int = 0
+
     private lateinit var tfInference: TensorFlowInferenceInterface
 
     private lateinit var adapter: CapsuleParamAdapter
@@ -41,27 +46,33 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
             it.setDisplayHomeAsUpEnabled(true)
         }
 
-        // get extra
-        predictionRow = if (savedInstanceState == null) {
-            intent.getParcelableExtra(EXTRA_PREDICTION_ROW)!!
-        } else {
-            savedInstanceState.getParcelable(EXTRA_PREDICTION_ROW)!!
+        with(reconstruct_button) {
+            isEnabled = false
+            setOnClickListener(this@TweakActivity)
         }
+
+        // get extra
+        val predictionRowId = savedInstanceState?.getInt(EXTRA_PREDICTION_ROW_ID)
+                ?: intent.getIntExtra(EXTRA_PREDICTION_ROW_ID, 0)
+        realDigit = savedInstanceState?.getInt(EXTRA_REAL_DIGIT)
+                ?: intent.getIntExtra(EXTRA_REAL_DIGIT, 0)
+
 
         // get tf inference
         tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")
 
         // pull out the 1 capsule that has data
-        val focusedCapsule = predictionRow.capsules[predictionRow.realDigit]
-        adapter = CapsuleParamAdapter(focusedCapsule)
-        tweak_rv.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        tweak_rv.adapter = adapter
-
-        with(reconstruct_button) {
-            isEnabled = false
-            setOnClickListener(this@TweakActivity)
+        launch {
+            val db = CapsuleDatabase.getCapsuleDatabase(this@TweakActivity)
+            predictionRow = db.getPredictionRow(predictionRowId)
+            val focusedCapsule = predictionRow.capsules[realDigit]
+            runOnUiThread {
+                adapter = CapsuleParamAdapter(focusedCapsule)
+                tweak_rv.layoutManager = LinearLayoutManager(this@TweakActivity, LinearLayoutManager.VERTICAL, false)
+                tweak_rv.adapter = adapter
+            }
+            runInference(predictionRow)
         }
-        launch { runInference(predictionRow) }
     }
 
     suspend private fun runInference(inferencePredictionRow: PredictionRow) {
@@ -80,7 +91,7 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
         val updatedCapsule = adapter.getUpdatedCapsule()
 
         val updatedPredictionRow = ArrayList(predictionRow.capsules)
-        updatedPredictionRow[predictionRow.realDigit] = updatedCapsule
+        updatedPredictionRow[realDigit] = updatedCapsule
         launch { runInference(PredictionRow(updatedPredictionRow)) }
     }
 

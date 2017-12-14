@@ -7,14 +7,14 @@ import android.util.Log
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.capsule_tweak.TweakActivity
 import fhc.tfsandbox.capsnettweak.database.CapsuleDatabase
-import fhc.tfsandbox.capsnettweak.models.PredictionRow
+import fhc.tfsandbox.capsnettweak.models.Prediction
 import kotlinx.android.synthetic.main.activity_main.*
 
 fun String.debugPrint() {
     Log.d("test", this)
 }
 
-class MainActivity : AppCompatActivity(), PredictionRowAdapter.PredictionRowAdapterListener {
+class MainActivity : AppCompatActivity(), PredictionAdapter.PredictionAdapterListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,14 +29,14 @@ class MainActivity : AppCompatActivity(), PredictionRowAdapter.PredictionRowAdap
     }
 
     private fun onDbReady(capsuleDatabase: CapsuleDatabase) {
-        val capsules = capsuleDatabase.getAllPredictionRows()
-        val adapter = PredictionRowAdapter(capsules, this)
+        val predictions = capsuleDatabase.getPredictions()
+        val adapter = PredictionAdapter(predictions, this)
         prediction_row_rv.layoutManager = GridLayoutManager(this, 2)
         prediction_row_rv.adapter = adapter
     }
 
-    override fun onPredictionRowClicked(predictionRow: PredictionRow) {
-        startActivity(TweakActivity.newIntent(this, predictionRow))
+    override fun onPredictionClicked(prediction: Prediction) {
+        startActivity(TweakActivity.newIntent(this, prediction.prediction_row, prediction.real_digit))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
