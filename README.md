@@ -133,6 +133,7 @@ We can also see the **reconstructed** image **vs** the **source images** using `
 Both of these scripts depend on a **checkpoint file** (*trained above using train.py*)
 #### Example usage
 `evaluation.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
+
 `prediction.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
 
 #### Outputs
