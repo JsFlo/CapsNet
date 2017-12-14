@@ -59,7 +59,7 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
         title = "Reconstruction ($realDigit)"
 
         // get tf inference
-        tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")
+        tfInference = TensorFlowInferenceInterface(assets, "model_graph_v2.pb")
 
         // pull out the 1 capsule that has data
         launch {
