@@ -6,6 +6,17 @@
     android:padding="4dp"
     tools:background="@color/dark_gray">
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:background="@color/dark_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <android.support.v7.widget.AppCompatSeekBar
         android:id="@+id/vp_seekbar"
         android:layout_width="match_parent"
@@ -17,6 +28,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/vp_left_label"

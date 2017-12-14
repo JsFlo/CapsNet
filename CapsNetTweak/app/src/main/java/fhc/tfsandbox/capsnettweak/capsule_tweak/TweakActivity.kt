@@ -40,7 +40,6 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tweak)
-        title = "Reconstruction"
         supportActionBar?.let {
             it.setHomeButtonEnabled(true)
             it.setDisplayHomeAsUpEnabled(true)
@@ -57,6 +56,7 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
         realDigit = savedInstanceState?.getInt(EXTRA_REAL_DIGIT)
                 ?: intent.getIntExtra(EXTRA_REAL_DIGIT, 0)
 
+        title = "Reconstruction ($realDigit)"
 
         // get tf inference
         tfInference = TensorFlowInferenceInterface(assets, "model_graph.pb")

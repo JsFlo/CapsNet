@@ -148,7 +148,7 @@ class CapsuleDatabase(context: Context, databaseName: String, databaseVersion: I
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {}
 
-    fun Cursor.getInt(columnName: String) = getInt(getColumnIndex(columnName))
-    fun Cursor.getFloat(columnName: String) = getFloat(getColumnIndex(columnName))
-    fun Cursor.getBlob(columnName: String) = getBlob(getColumnIndex(columnName))
+    private fun Cursor.getInt(columnName: String) = getInt(getColumnIndex(columnName))
+    private fun Cursor.getFloat(columnName: String) = getFloat(getColumnIndex(columnName))
+    private fun Cursor.getBlob(columnName: String) = getBlob(getColumnIndex(columnName))
 }
