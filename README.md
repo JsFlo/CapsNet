@@ -1,10 +1,28 @@
-# CapsNet
+# CapsNetTweak
 
-A hobby project that trains a new neural network architecture based around `capsules` using the **Python** **Tensorflow** api. After training the model I pull out a smaller section from the full model called the `decoder` which is able to take an array of `capsules` and produce an image that should looks like the `source image` used to get said `capsules`.
+A Tensorflow implementation of the recently published Capsule Network that allows you to separate/export the `decoder`.
 
-With the smaller network (`decoder` with frozen weights from the full model) I added the model to an **Android** app I created which is able to take the `capsules` and display the **reconstructed** images.
+The `decoder` is found at the end of Capsule Networks and used to recreate the source images. The capsule network is trained taking this **reconstruction loss** into consideration which means that the Capsule Network will learn to give capsules meaningful parameters.
 
-The Android app is called **CapsNetTweak** and it allows you to change or *tweak* the capsule parameters to see what effects it had and to insight into what the full model learned.
+The paper, [*Dynamic Routing Between Capsules*](https://arxiv.org/abs/1710.09829), shows some modification of these Capsule dimensions/parameters.
+
+EXAMPLE FIG 4 FROM PAPER
+
+After exporting the `decoder` (freezing and exporting only the data/graph structure associated with it) I imported the model to an Android app (**./CapsNetTweak**).
+
+The Android app gives a user the ability to modify or *tweak* any dimension in a Capsule
+and run inference on the modified capsule to see the recreation.
+
+IMAGE OF APP
+
+Hopefully the modification and recreation of the images will give some insights into what the model learned for each dimension in a Capsule
+
+Goals of the project:
+  * Implement and understand a Capsule Network
+  * Experience++ with Kotlin and python
+  * Sharing a database between python and Kotlin (Android App)
+  * Saving models and checkpoints in Tensorflow
+  * Separating/Extracting only specific sections of a fully trained model
 
 
 The new algorithm is described in the recently published papers([*Dynamic Routing Between Capsules*](https://arxiv.org/abs/1710.09829), [*Matrix Capsules with EM Routing*](https://arxiv.org/abs/1710.09829)) by Geoffrey Hinton and team.
