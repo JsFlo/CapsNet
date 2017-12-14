@@ -12,7 +12,7 @@ The paper, [*Dynamic Routing Between Capsules*](https://arxiv.org/abs/1710.09829
 
 <img src="images/fig4.png" width="600">
 
-After exporting the `decoder` (freezing and exporting only the data/graph structure associated with it) I imported the model to an Android app (**./CapsNetTweak**).
+After exporting the `decoder` (freezing and exporting only the data/graph structure associated with it) I created an Android Application(**./CapsNetTweak**) that can import the model and run inference on teh device.
 
 The Android app gives a user the ability to modify or *tweak* any dimension in a Capsule
 and run inference on the modified capsule to see the recreation.
