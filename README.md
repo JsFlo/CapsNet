@@ -17,7 +17,8 @@ After exporting the `decoder` (freezing and exporting only the data/graph struct
 The Android app gives a user the ability to modify or *tweak* any dimension in a Capsule
 and run inference on the modified capsule to see the recreation.
 
-IMAGE OF APP
+<img src="images/capsule_outputs.png" width="200"><img src="images/reconstruction.png" width="200"><img src="images/reconstruction_modified.png" width="200">
+
 
 Hopefully the modification and recreation of the images will give some insights into what the model learned for each dimension in a Capsule
 
@@ -141,7 +142,7 @@ Both of these scripts depend on a **checkpoint file** (*trained above using trai
 
 `evaluation.py` outputs an image comparison of the source image and reconstruction
 
-IMAGE-OF-prediction
+<img src="images/label_prediction.png" width="600">
 
 ## Extracting the decoder
 `export_minimal_decoder.py`
