@@ -85,18 +85,18 @@ Training will be done with `train.py` which will output a **checkpoint** file.
 #### Args
 * Required
   * Checkpoint path - Where to save the checkpoints and/or where to look for a checkpoint if you want to continue training an old checkpoint
-    * `train.py --checkpoint_path=./my_checkpoints`
+    * `python train.py --checkpoint_path=./my_checkpoints`
   * Checkpoint Name - What to name the checkpoint
-    * `train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint`
+    * `python train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint`
 * Optional
   * Restore Checkpoint - Flag used to restore training from an old checkpoint if applicable (*if there's an old checkpoint*)
-    *  `train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --restore_checkpoints=True`
+    *  `python train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --restore_checkpoints=True`
     * Default: True
   *  Training batch size -
-    * `train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --batch_size=50`
+    * `python train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --batch_size=50`
     * Default: 50
   * Number of epochs -
-    * `train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --n_epochs=10`
+    * `python train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint --n_epochs=10`
     * Default: 10
 
 
@@ -104,22 +104,28 @@ Training will be done with `train.py` which will output a **checkpoint** file.
 After running the training script the output should be a **checkpoint file** in the directory specified.
 
 #### Example
-`train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint`
+`python train.py --checkpoint_path=./my_checkpoints --checkpoint_name=my_awesome_checkpoint`
 
 **IMPORTANT**
 So the path to our checkpoint is `./my_checkpoints/my_awesome_checkpoint` but if you
 look in the folder you'll see there's not **a** file with that name.
 ```
-tree example
+.
+└── my_checkpoints
+    ├── checkpoint
+    ├── my_awesome_checkpoint.data-00000-of-00001
+    ├── my_awesome_checkpoint.index
+    └── my_awesome_checkpoint.meta
+
 ```
 
-Tensorflow exports checkpoints like this and it is used to separate the graph from the real values but the only thing we need to worry about is that when we are **passing** the **checkpoint file** to the other scripts we need to just reference the model name.
+Tensorflow exports checkpoints like this and it is used to separate the graph from the actual values but the only thing we need to worry about is that when we are **passing** the **checkpoint file** to the other scripts we need to just reference the model name.
 
 **So don't do this**
 ```
-someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.data--00
-someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.labe
-someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.3rd
+someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.data-00000-of-00001
+someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.index
+someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.meta
 someScriptThatNeedsCheckpoints --model_path=./my_checkpoints/my_awesome_checkpoint.
 ```
 **Do this**
@@ -133,9 +139,9 @@ We can also see the **reconstructed** image **vs** the **source images** using `
 
 Both of these scripts depend on a **checkpoint file** (*trained above using train.py*)
 #### Example usage
-`evaluation.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
+`python evaluation.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
 
-`prediction.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
+`python prediction.py --checkpoint=./my_checkpoints/my_awesome_checkpoint --batch_size=10`
 
 #### Outputs
 `prediction.py` outputs the **generalization error** (*tested against MNIST validation set*): 99.4!
