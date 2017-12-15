@@ -173,5 +173,16 @@ This means that we will recreate a graph for only the `decoder` and freeze *only
 `export_minimal_decoder.py` will output a **model graph (.pb)** and a **database** that will be shared with the Android app.
 
 The **database** will have **source images (MNIST Images)** as well as the **capsules** produced by the full Capsule Network.
+```
+.
+├── database
+│   └── minimal_decoder.db
+├── masked_capsules
+│   └── masked_output.npy
+├── model_graph.pb
+└── source_images
+    └── source_images.npy
+
+```
 
 The Android app will use the capsules run inference on the Android device. The app will also allow a user to modify the capsule values.
