@@ -35,7 +35,7 @@ The new algorithm is described in the recently published papers([*Dynamic Routin
 ## Flow overview
 1. Train a model and get a **checkpoint file**
 2. Separate and **export** only the **decoder** section of the Capsule Network
-3. Use the **decoder** and some **capsules** to run inference on capsules on the Android device
+3. Use the **decoder** and some **capsules** to reconstruct an image based on the capsules on the Android device
 
 ## Getting Started
 
@@ -184,5 +184,3 @@ The **database** will have **source images (MNIST Images)** as well as the **cap
     └── source_images.npy
 
 ```
-
-The Android app will use the capsules run inference on the Android device. The app will also allow a user to modify the capsule values.
