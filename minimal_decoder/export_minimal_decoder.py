@@ -1,16 +1,15 @@
 from __future__ import division, print_function, unicode_literals
-import os
-import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
-import io
-import scipy.misc
 
+import io
+import os
+import sqlite3
 # puts a bad dependency - can only be run from this directory
 import sys
-import sqlite3
 
+import numpy as np
+import scipy.misc
+import tensorflow as tf
+#  WILL ONLY WORK IN CURRENT DIRECTORY
 sys.path.append('../')
 
 # Makes them look like static method calls (not python style but helps me :)
@@ -37,10 +36,6 @@ SOURCE_IMAGES_NPY_FILENAME = "source_images.npy"
 DATABASE_PATH = FLAGS.model_output + "/database/"
 DATABASE_NAME = "minimal_decoder.db"
 
-
-# CHECKPOINT_PATH = "../checkpoint_with_decoder_tags_67_epoch/my_caps_net"
-# EXPORT_DIR = './model_output'
-# MODEL_NAME = 'decoder_67_v2.pb'
 def create_dirs_if_not_exists(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -145,7 +140,6 @@ def restore_export():
         print("Tensors shapes: {}".format(weight_tensor.shape))
 
     saver = tf.train.Saver()
-    # source_images = MNIST.test.images[:FLAGS.masked_capsules].reshape([-1, 28, 28, 1])
     source_images, source_labels = MNIST.train.next_batch(FLAGS.masked_capsules)
 
     with tf.Session() as sess:
