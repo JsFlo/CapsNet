@@ -1,11 +1,10 @@
 from __future__ import division, print_function, unicode_literals
 
 import numpy as np
-import os
 import tensorflow as tf
 import argparse
 from tensorflow.examples.tutorials.mnist import input_data
-
+from utils import create_dirs_if_not_exists
 # Makes them look like static method calls (not python style but helps me :)
 import caps_net_model.model as CapsNetModel
 
@@ -27,12 +26,6 @@ N_ITERATIONS_VALIDATION = 1  # mnist.validation.num_examples // TRAINING_BATCH_S
 
 MNIST = input_data.read_data_sets("/tmp/data/")
 BEST_LOSS_VAL = np.infty
-
-
-def create_dirs_if_not_exists(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
-
 
 create_dirs_if_not_exists(FLAGS.checkpoint_dir)
 

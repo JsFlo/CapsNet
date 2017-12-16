@@ -1,5 +1,9 @@
 import tensorflow as tf
+import os
 
+def create_dirs_if_not_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 def printShape(tensor):
     print(tensor.shape)
