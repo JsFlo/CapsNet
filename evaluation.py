@@ -2,6 +2,7 @@ from __future__ import division, print_function, unicode_literals
 
 import numpy as np
 import tensorflow as tf
+import argparse
 from tensorflow.examples.tutorials.mnist import input_data
 
 # Makes them look like static method calls (not python style but helps me :)
@@ -9,10 +10,17 @@ import caps_net_model.model as CapsNetModel
 
 MNIST = input_data.read_data_sets("/tmp/data/")
 
-CHECKPOINT_PATH = "./checkpoints/my_caps_net"
-TRAINING_BATCH_SIZE = 1  # 50
+parser = argparse.ArgumentParser()
+parser.add_argument('--checkpoint', type=str, required=True)
+parser.add_argument('--batch_size', type=int, default=1)
+parser.add_argument('--debug', type=bool, default=False)
+FLAGS = parser.parse_args()
 
-n_iterations_test = 1  # MNIST.test.num_examples // TRAINING_BATCH_SIZE
+if (FLAGS.debug):
+    n_iterations_test = 1
+    FLAGS.batch_size = 1
+else:
+    n_iterations_test = MNIST.test.num_examples // FLAGS.batch_size
 
 
 def evaluate():
@@ -25,12 +33,12 @@ def evaluate():
     saver = tf.train.Saver()
 
     with tf.Session() as sess:
-        saver.restore(sess, CHECKPOINT_PATH)
+        saver.restore(sess, FLAGS.checkpoint)
 
         loss_tests = []
         acc_tests = []
         for iteration in range(1, n_iterations_test + 1):
-            X_batch, y_batch = MNIST.test.next_batch(TRAINING_BATCH_SIZE)
+            X_batch, y_batch = MNIST.test.next_batch(FLAGS.batch_size)
 
             loss_test, acc_test = sess.run(
                 [final_loss, accuracy],
@@ -44,7 +52,6 @@ def evaluate():
                 end=" " * 10)
         loss_test = np.mean(loss_tests)
         acc_test = np.mean(acc_tests)
-        print("hi")
         print("\rFinal test accuracy: {:.4f}%  Loss: {:.6f}".format(
             acc_test * 100, loss_test))
 
