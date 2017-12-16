@@ -8,6 +8,8 @@ from utils import create_dirs_if_not_exists
 # Makes them look like static method calls (not python style but helps me :)
 import caps_net_model.model as CapsNetModel
 
+MNIST = input_data.read_data_sets("/tmp/data/")
+
 parser = argparse.ArgumentParser()
 # REQUIRED
 parser.add_argument('--checkpoint_dir', type=str, required=True,
@@ -18,13 +20,20 @@ parser.add_argument('--checkpoint_name', type=str, required=True,
 parser.add_argument('--restore_checkpoint', type=bool, default=True)
 parser.add_argument('--batch_size', type=int, default=50)
 parser.add_argument('--n_epochs', type=int, default=10)
+parser.add_argument('--debug', type=bool, default=False)
 FLAGS = parser.parse_args()
 
-CHECKPOINT_PATH = FLAGS.checkpoint_dir + "/" + FLAGS.checkpoint_name
-N_ITERATIONS_PER_EPOCH = 1  # mnist.train.num_examples // TRAINING_BATCH_SIZE
-N_ITERATIONS_VALIDATION = 1  # mnist.validation.num_examples // TRAINING_BATCH_SIZE
+if(FLAGS.debug):
+    FLAGS.batch_size = 1
+    FLAGS.n_epochs = 1
+    N_ITERATIONS_PER_EPOCH = 1
+    N_ITERATIONS_VALIDATION = 1
+else:
+    N_ITERATIONS_PER_EPOCH = MNIST.train.num_examples // FLAGS.batch_size
+    N_ITERATIONS_VALIDATION = MNIST.validation.num_examples // FLAGS.batch_size
 
-MNIST = input_data.read_data_sets("/tmp/data/")
+CHECKPOINT_PATH = FLAGS.checkpoint_dir + "/" + FLAGS.checkpoint_name
+
 BEST_LOSS_VAL = np.infty
 
 create_dirs_if_not_exists(FLAGS.checkpoint_dir)
