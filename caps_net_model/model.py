@@ -4,8 +4,8 @@ import tensorflow as tf
 
 import caps_net_model.digit_capsules as DigitCapsules
 import caps_net_model.primary_capsules as PrimaryCapsules
+import caps_net_model.decoder as decoder
 # Makes them look like static method calls (not python style but helps me :)
-import decoder.decoder as Decoder
 from utils import safe_norm
 
 
@@ -135,7 +135,7 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
 
     # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
-    reconstruction_loss, decoder_output = Decoder.get_reconstruction_loss(masked_out, input_image_batch)
+    reconstruction_loss, decoder_output = decoder.get_reconstruction_loss(masked_out, input_image_batch)
     return reconstruction_loss, decoder_output, masked_out
 
 
