@@ -86,13 +86,14 @@ def _routing_by_agreement(digit_caps, batch_size):
     # round 1
     round1_output = _routing_round(raw_weights, digit_caps)
     round1_agreement = _get_round_agreement(round1_output, digit_caps, 1152)
-
-    # now update those weights from the beginning
-    # by just adding the agreement values
     raw_weights_round_2 = tf.add(raw_weights, round1_agreement)
 
     round2_output = _routing_round(raw_weights_round_2, digit_caps)
-    return round2_output
+    round2_agreement = _get_round_agreement(round2_output, digit_caps, 1152)
+    raw_weights_round_3 = tf.add(raw_weights, round2_agreement)
+
+    round3_output = _routing_round(raw_weights_round_3, digit_caps)
+    return round3_output
 
 
 def _routing_round(previous_weights, digit_caps_prediction):
