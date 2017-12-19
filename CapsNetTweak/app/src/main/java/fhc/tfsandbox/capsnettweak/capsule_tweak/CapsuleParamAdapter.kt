@@ -4,20 +4,26 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SeekBar
 import fhc.tfsandbox.capsnettweak.R
 import fhc.tfsandbox.capsnettweak.models.Capsule
 import kotlinx.android.synthetic.main.item_capsule_param.view.*
 
-class CapsuleParamAdapter(private val capsule: Capsule)
+class CapsuleParamAdapter(private val capsule: Capsule,
+                          private val listener: CapsuleParamAdapterListener)
     : RecyclerView.Adapter<CapsuleParamViewHolder>(), CapsuleParamViewHolder.CapsuleParamListener {
+
+    interface CapsuleParamAdapterListener {
+        // I'm not passing the updated cap here because it might not be used
+        // making a copy is expensive
+        fun onReconstructionNeeded()
+    }
 
     fun getUpdatedCapsule(): Capsule {
         return capsule.copy(paramArray = capsuleParams.toFloatArray())
     }
 
     // might need a clone here ? I don't want to modify the original Capsule
-    private val capsuleParams = capsule.paramArray.clone().toMutableList()
+    private val capsuleParams = capsule.paramArray.toMutableList()
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): CapsuleParamViewHolder {
         val itemView = LayoutInflater.from(parent?.context).inflate(R.layout.item_capsule_param, parent, false)
@@ -34,6 +40,10 @@ class CapsuleParamAdapter(private val capsule: Capsule)
         capsuleParams[adapterPosition] = newValue
     }
 
+    override fun onStoppedUpdating() {
+        listener.onReconstructionNeeded()
+    }
+
 }
 
 class CapsuleParamViewHolder(itemView: View, private val listener: CapsuleParamListener)
@@ -41,6 +51,7 @@ class CapsuleParamViewHolder(itemView: View, private val listener: CapsuleParamL
 
     interface CapsuleParamListener {
         fun onCapsuleParamChanged(adapterPosition: Int, newValue: Float)
+        fun onStoppedUpdating()
     }
 
     init {
@@ -55,6 +66,10 @@ class CapsuleParamViewHolder(itemView: View, private val listener: CapsuleParamL
 
     override fun onValueUpdated(negativeOneToOneFloat: Float) {
         listener.onCapsuleParamChanged(adapterPosition, negativeOneToOneFloat)
+    }
+
+    override fun onStopTrackingTouch() {
+        listener.onStoppedUpdating()
     }
 
 }

@@ -22,6 +22,7 @@ class CustomValuePicker(context: Context?, attrs: AttributeSet?) : FrameLayout(c
 
     interface CustomValuePickerListener {
         fun onValueUpdated(negativeOneToOneFloat: Float)
+        fun onStopTrackingTouch()
     }
 
     companion object {
@@ -65,6 +66,7 @@ class CustomValuePicker(context: Context?, attrs: AttributeSet?) : FrameLayout(c
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
         seekBar?.let {
             onProgressChanged(it.progress)
+            listener?.onStopTrackingTouch()
         }
     }
 

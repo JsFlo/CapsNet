@@ -8,22 +8,30 @@ import android.view.View
 
 class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context, attrs) {
 
-    private lateinit var mOffscreenBitmap: Bitmap
-    private lateinit var mOffscreenCanvas: Canvas
+
+    companion object {
+        val WIDTH = 28
+        val HEIGHT = 28
+    }
+
+    private val mOffscreenBitmap: Bitmap
+    private val mOffscreenCanvas: Canvas
     private val mPaint = Paint()
+
+    private val mInvMatrix = Matrix()
     private val mMatrix: Matrix by lazy {
         val matrix = Matrix()
 
         // View size
-        val width = width.toFloat()
-        val height = height.toFloat()
+        val viewWidth = width.toFloat()
+        val viewHeight = height.toFloat()
 
         // Model (bitmap) size
-        val modelWidth = 28f
-        val modelHeight = 28f
+        val modelWidth = WIDTH.toFloat()
+        val modelHeight = HEIGHT.toFloat()
 
-        val scaleW = width / modelWidth
-        val scaleH = height / modelHeight
+        val scaleW = viewWidth / modelWidth
+        val scaleH = viewHeight / modelHeight
 
         var scale = scaleW
         if (scale > scaleH) {
@@ -32,8 +40,8 @@ class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context
 
         val newCx = modelWidth * scale / 2
         val newCy = modelHeight * scale / 2
-        val dx = width / 2 - newCx
-        val dy = height / 2 - newCy
+        val dx = viewWidth / 2 - newCx
+        val dy = viewHeight / 2 - newCy
 
 
         matrix.setScale(scale, scale)
@@ -42,25 +50,12 @@ class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context
         matrix
     }
 
-    private val mInvMatrix = Matrix()
-
-    companion object {
-        val WIDTH = 28
-        val HEIGHT = 28
-    }
+    var dataFloatArray: FloatArray? = null
 
     init {
-        mPaint.isAntiAlias = true
-        val cm = ColorMatrix()
-        cm.setSaturation(0f)
-        val f = ColorMatrixColorFilter(cm)
-        mPaint.setColorFilter(f)
-        mPaint.color = Color.BLACK
         mOffscreenBitmap = Bitmap.createBitmap(28, 28, Bitmap.Config.RGB_565)
         mOffscreenCanvas = Canvas(mOffscreenBitmap)
     }
-
-    var dataFloatArray: FloatArray? = null
 
     fun setArray(floatArray: FloatArray) {
         dataFloatArray = floatArray
@@ -70,6 +65,7 @@ class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.let {
+
             for (h in 0 until HEIGHT) {
                 for (w in 0 until WIDTH) {
                     dataFloatArray?.let {
@@ -82,9 +78,7 @@ class GrayArrayImageView(context: Context?, attrs: AttributeSet?) : View(context
                 }
             }
 
-            canvas.drawBitmap(mOffscreenBitmap, mMatrix, mPaint)
+            it.drawBitmap(mOffscreenBitmap, mMatrix, mPaint)
         }
-
-
     }
 }
