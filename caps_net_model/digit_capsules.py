@@ -4,12 +4,23 @@ import numpy as np
 from utils import squash
 
 
+
+
 def get_digit_caps_output(last_layer, batch_size):
     # "primary capsules digit caps prediction" (1152, 10, 16)
-    prediction_of_digit_caps = _get_primary_cap_prediction_of_digit_caps(last_layer, batch_size)
+    prediction_of_digit_caps, digit_caps_shared_predicted = _get_primary_cap_prediction_of_digit_caps(last_layer,
+                                                                                                      batch_size)
+
+    print("prediction of shared")
+    print(digit_caps_shared_predicted.shape)  # (?, 1152, 10, 3, 1)
+    digit_caps_shared_flattened = tf.reshape(digit_caps_shared_predicted, [-1, 1152 * 10, 3, 1])  # (?, 11520, 3, 1)
+    print(digit_caps_shared_flattened.shape)
+    _routing_by_agreement_shared_weights(digit_caps_shared_flattened, batch_size)
 
     # routing by agreement (may involve multiple rounds)
     digit_caps_predictions = _routing_by_agreement(prediction_of_digit_caps, batch_size)
+    print("prediction of digit caps")
+    print(digit_caps_predictions.shape)
     return digit_caps_predictions
 
 
@@ -52,9 +63,19 @@ def _get_primary_cap_prediction_of_digit_caps(last_layer, batch_size):
         stddev=init_sigma, dtype=tf.float32)
     W = tf.Variable(W_init)
 
+    # # Shared weigths for this layer so we need 3 for every digit
+    # # we need a weight transformation matrix: (3,8) so we can multiply by last layer
+    # # (?, 1152, 8, 1) * (?, 10, 3, 8) = (?, 10, 3, 1)
+    w_shared_init = tf.random_normal(
+        shape=(1, last_layer_n_caps, digit_n_caps, 3, last_layer_n_dims),
+        stddev=init_sigma, dtype=tf.float32)
+    w_shared = tf.Variable(w_shared_init)
+
     # copy paste for batch size to get (BATCH_SIZE, 1152, 10, 16, 8)
     W_tiled = tf.tile(W, [batch_size, 1, 1, 1, 1])
     # (?, 1152, 10, 16, 8)
+
+    w_shared_tiled = tf.tile(w_shared, [batch_size, 1, 1, 1, 1])
 
     # what we have: Transformation_matrix(BATCH_SIZE, 1152, 10, 16, 8)
     # what we need: Second matrix from last layer (BATCH_SIZE, 1152, 10, 8, 1)
@@ -72,8 +93,12 @@ def _get_primary_cap_prediction_of_digit_caps(last_layer, batch_size):
     digit_caps_predicted = tf.matmul(W_tiled, caps1_output_tiled)
     # (? , 1152, 10, 16, 1)
 
-    return digit_caps_predicted
+    digit_caps_shared_predicted = tf.matmul(w_shared_tiled, caps1_output_tiled)
 
+    return digit_caps_predicted, digit_caps_shared_predicted
+
+def _routing_by_agreement_shared_weights(digit_caps_shared_flattened, batch_size):
+    pass
 
 def _routing_by_agreement(digit_caps, batch_size):
     # digitCaps (?, 1152, 10, 16, 1)
