@@ -14,14 +14,17 @@ import fhc.tfsandbox.capsnettweak.database.CapsuleDatabase
 import fhc.tfsandbox.capsnettweak.models.PredictionRow
 import fhc.tfsandbox.capsnettweak.models.ShapeDimensions
 import kotlinx.android.synthetic.main.activity_tweak.*
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface
 
-class TweakActivity : AppCompatActivity(), View.OnClickListener {
+class TweakActivity : AppCompatActivity(), CapsuleParamAdapter.CapsuleParamAdapterListener {
 
     companion object {
         const val EXTRA_PREDICTION_ROW_ID = "EXTRA_PREDICTION_ROW"
         const val EXTRA_REAL_DIGIT = "EXTRA_REAL_DIGIT"
+        const val RECONSTRUCTION_DELAY_MILLIS = 600L
+
         fun newIntent(context: Context, predictionRow: Int, realDigit: Int): Intent {
             val intent = Intent(context, TweakActivity::class.java)
             intent.putExtra(EXTRA_PREDICTION_ROW_ID, predictionRow)
@@ -30,11 +33,11 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    private lateinit var predictionRow: PredictionRow
+    private var reconstructionJob: Job? = null
+
     private var realDigit: Int = 0
-
+    private lateinit var predictionRow: PredictionRow
     private lateinit var tfInference: TensorFlowInferenceInterface
-
     private lateinit var adapter: CapsuleParamAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,11 +46,6 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
         supportActionBar?.let {
             it.setHomeButtonEnabled(true)
             it.setDisplayHomeAsUpEnabled(true)
-        }
-
-        with(reconstruct_button) {
-            isEnabled = false
-            setOnClickListener(this@TweakActivity)
         }
 
         // get extra
@@ -67,12 +65,31 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
             predictionRow = db.getPredictionRow(predictionRowId)
             val focusedCapsule = predictionRow.capsules[realDigit]
             runOnUiThread {
-                adapter = CapsuleParamAdapter(focusedCapsule)
+                adapter = CapsuleParamAdapter(focusedCapsule, this@TweakActivity)
                 tweak_rv.layoutManager = LinearLayoutManager(this@TweakActivity, LinearLayoutManager.VERTICAL, false)
                 tweak_rv.adapter = adapter
             }
             runInference(predictionRow)
         }
+    }
+
+
+    override fun onReconstructionNeeded() {
+        reconstructionJob?.cancel()
+        reconstructionJob = launch {
+            Thread.sleep(RECONSTRUCTION_DELAY_MILLIS)
+            if (isActive) {
+                getUpdatedCapsuleAndRunInference()
+            }
+        }
+    }
+
+    suspend private fun getUpdatedCapsuleAndRunInference() {
+        val updatedCapsule = adapter.getUpdatedCapsule()
+
+        val updatedPredictionRow = ArrayList(predictionRow.capsules)
+        updatedPredictionRow[realDigit] = updatedCapsule
+        runInference(PredictionRow(updatedPredictionRow))
     }
 
     suspend private fun runInference(inferencePredictionRow: PredictionRow) {
@@ -82,17 +99,7 @@ class TweakActivity : AppCompatActivity(), View.OnClickListener {
 
         runOnUiThread {
             image_view.setArray(floatOutputs)
-            reconstruct_button.isEnabled = true
         }
-    }
-
-    override fun onClick(v: View?) {
-        reconstruct_button.isEnabled = false
-        val updatedCapsule = adapter.getUpdatedCapsule()
-
-        val updatedPredictionRow = ArrayList(predictionRow.capsules)
-        updatedPredictionRow[realDigit] = updatedCapsule
-        launch { runInference(PredictionRow(updatedPredictionRow)) }
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
