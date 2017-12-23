@@ -13,7 +13,7 @@ def _get_model_output(input_image_batch, batch_size):
     primaryCapsules = PrimaryCapsules.get_primary_capsules(input_image_batch)
 
     # prediction
-    digitCaps_postRouting = DigitCapsules.get_digit_caps_output(primaryCapsules, batch_size)
+    digitCaps_postRouting, shared_caps_prediction = DigitCapsules.get_digit_caps_output(primaryCapsules, batch_size)
     # (?, 1, 10, 16, 1)
 
     # single digit prediction
@@ -129,7 +129,7 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
     # mask it! (10, 16) * [0, 0, 1, 0, 0, ...]
     masked_out = tf.multiply(digitCaps_postRouting, reconstruction_mask_reshaped)
-    print("shape!!!!!!: {}".format(masked_out))
+    # print("shape!!!!!!: {}".format(masked_out))
     # masked out
     # (10, 16) but only (1, 16) has values because of the above
 
