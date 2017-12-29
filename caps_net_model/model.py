@@ -25,20 +25,20 @@ def _get_model_output(input_image_batch, batch_size):
     print(final_combined_capsule_predictions.shape)
 
     # single digit prediction
-    single_digit_prediction = _transform_model_output_to_a_single_digit(digitCaps_postRouting)
+    single_digit_prediction = _transform_model_output_to_a_single_digit(final_combined_capsule_predictions)
     # (?, )
 
     # labels
     correct_labels_placeholder = tf.placeholder(shape=[None], dtype=tf.int64)
 
     # loss
-    margin_loss = _get_margin_loss(correct_labels_placeholder, digitCaps_postRouting)
+    margin_loss = _get_margin_loss(correct_labels_placeholder, final_combined_capsule_predictions)
     mask_with_labels = tf.placeholder_with_default(False, shape=())
 
     reconstruction_loss, decoder_output, masked_out = _get_reconstruction_loss(mask_with_labels,
                                                                                correct_labels_placeholder,
                                                                                single_digit_prediction,
-                                                                               digitCaps_postRouting, input_image_batch)
+                                                                               digitCaps_postRouting,shared_caps_prediction,  input_image_batch)
 
     # keep it small
     reconstruction_alpha = 0.0005
@@ -122,7 +122,7 @@ def _get_margin_loss(predicted_digit, digitCaps_postRouting):
     return margin_loss
 
 
-def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting, input_image_batch):
+def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,shared_caps_prediction, input_image_batch):
     # first take the 10 16-dimension vectors output and pulls out the [predicted digit vector|correct_label digit vector)
     # (ex. prediction: digit 3 so take the 16-dimension vector and pass it to the decoder)
 
@@ -147,7 +147,7 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
 
     # Decoder will use the 16 dimension vector to reconstruct the image (28 x 28)
-    reconstruction_loss, decoder_output = decoder.get_reconstruction_loss(masked_out, input_image_batch)
+    reconstruction_loss, decoder_output = decoder.get_reconstruction_loss(masked_out,shared_caps_prediction, input_image_batch)
     return reconstruction_loss, decoder_output, masked_out
 
 
