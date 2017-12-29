@@ -16,6 +16,14 @@ def _get_model_output(input_image_batch, batch_size):
     digitCaps_postRouting, shared_caps_prediction = DigitCapsules.get_digit_caps_output(primaryCapsules, batch_size)
     # (?, 1, 10, 16, 1)
 
+    # append the shared caps to all digits for margin loss
+    shared_caps_formatted = _transform_shared_caps_to_copy_paste_10(shared_caps_prediction)
+    print("APPEND")
+    print(shared_caps_formatted.shape)
+    print(digitCaps_postRouting.shape)
+    final_combined_capsule_predictions = tf.concat([digitCaps_postRouting, shared_caps_formatted], 3)
+    print(final_combined_capsule_predictions.shape)
+
     # single digit prediction
     single_digit_prediction = _transform_model_output_to_a_single_digit(digitCaps_postRouting)
     # (?, )
@@ -50,8 +58,9 @@ def _get_model_output(input_image_batch, batch_size):
 def get_model_output_for_training(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
-                                                                                            batch_size)
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(
+        input_image_batch,
+        batch_size)
 
     return digitCaps_postRouting, final_loss, correct, \
            accuracy, optimizer, training_op, mask_with_labels, \
@@ -61,8 +70,9 @@ def get_model_output_for_training(input_image_batch, batch_size):
 def get_model_output_for_evaluation(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
-                                                                                            batch_size)
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(
+        input_image_batch,
+        batch_size)
 
     return final_loss, accuracy, correct_labels_placeholder
 
@@ -70,8 +80,9 @@ def get_model_output_for_evaluation(input_image_batch, batch_size):
 def get_model_output_for_predictions(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
-                                                                                            batch_size)
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(
+        input_image_batch,
+        batch_size)
     return digitCaps_postRouting, \
            decoder_output, \
            single_digit_prediction, \
@@ -81,8 +92,9 @@ def get_model_output_for_predictions(input_image_batch, batch_size):
 def get_model_output_for_tweak(input_image_batch, batch_size):
     digitCaps_postRouting, final_loss, correct, \
     accuracy, optimizer, training_op, mask_with_labels, \
-    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(input_image_batch,
-                                                                                            batch_size)
+    decoder_output, single_digit_prediction, correct_labels_placeholder, masked_out = _get_model_output(
+        input_image_batch,
+        batch_size)
     return digitCaps_postRouting, \
            decoder_output, \
            single_digit_prediction, \
@@ -140,11 +152,13 @@ def _get_reconstruction_loss(mask_with_labels, y, y_pred, digitCaps_postRouting,
 
 
 def _transform_model_output_to_a_single_digit(digitCaps_postRouting):
+    print("TRANSFORM - BEGIN")
     # what we have: 10 16-dimensional vectors
     # what we want: which digit are you predicting ?
 
     # normalize to to get 10 scalars (length of the vectors)
     y_prob = safe_norm(digitCaps_postRouting, axis=-2)
+    print("TRANSFORM - AFTER SAFE NORM: {}".format(y_prob.shape))
     # (", 1, 10, 1)
 
     # get index of longest output vector
@@ -153,4 +167,25 @@ def _transform_model_output_to_a_single_digit(digitCaps_postRouting):
 
     # we have a 1 x 1 matrix , lets just say 1
     y_pred = tf.squeeze(y_prob_argmax, axis=[1, 2])
+    print("TRANSFORM - END")
     return y_pred
+
+def _transform_shared_caps_to_copy_paste_10(shared_caps_prediction):
+    print("TRANSFORM - INPUT BEGIN")
+    print(shared_caps_prediction.shape)
+    print("TRANSFORM - INPUT END")
+
+    print("TRANSFORM- SQUEEZE THE 1 X 1 MATRIX = 1 SCALAR")
+    squeezed_shared_caps = tf.squeeze(shared_caps_prediction, axis=[3, 4])
+    print(squeezed_shared_caps.shape)
+    print("TRANSFORM - EXPAND ")
+    expanded_squeezed_shared_caps = tf.expand_dims(squeezed_shared_caps, axis=1)
+    expanded_squeezed_shared_caps = tf.expand_dims(expanded_squeezed_shared_caps, axis=-1)
+    print(expanded_squeezed_shared_caps.shape)
+    print("TRANSFORM - copy paste")
+    # # copy paste for batch size to get (BATCH_SIZE, 1152, 10, 16, 8)
+    # W_tiled = tf.tile(W, [batch_size, 1, 1, 1, 1])
+    final_transformed_shared_caps = tf.tile(expanded_squeezed_shared_caps, [1, 1, 10, 1, 1])
+    print(final_transformed_shared_caps.shape)
+
+    return final_transformed_shared_caps
