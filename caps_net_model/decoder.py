@@ -46,7 +46,6 @@ def _get_tf_layers_impl(decoder_input, target,
     """
     with tf.variable_scope('decoder') as scope:
         n_output = target
-
         hidden1 = tf.layers.dense(decoder_input, n_hidden1,
                                   activation=tf.nn.relu)
         hidden2 = tf.layers.dense(hidden1, n_hidden2,

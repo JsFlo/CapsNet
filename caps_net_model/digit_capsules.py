@@ -122,7 +122,7 @@ def _routing_by_agreement_shared_weights(digit_caps_shared_flattened, batch_size
     #
     round2_output = _routing_round_shared(raw_weights_round_2, digit_caps_shared_flattened)
     round2_agreement = _get_round_agreement_shared(round2_output, digit_caps_shared_flattened, 11520)
-    raw_weights_round_3 = tf.add(raw_weights, round2_agreement)
+    raw_weights_round_3 = tf.add(raw_weights_round_2, round2_agreement)
 
     round3_output = _routing_round_shared(raw_weights_round_3, digit_caps_shared_flattened)
     return round3_output
@@ -145,7 +145,7 @@ def _routing_by_agreement(digit_caps, batch_size):
 
     round2_output = _routing_round(raw_weights_round_2, digit_caps)
     round2_agreement = _get_round_agreement(round2_output, digit_caps, 1152)
-    raw_weights_round_3 = tf.add(raw_weights, round2_agreement)
+    raw_weights_round_3 = tf.add(raw_weights_round_2, round2_agreement)
 
     round3_output = _routing_round(raw_weights_round_3, digit_caps)
     return round3_output
