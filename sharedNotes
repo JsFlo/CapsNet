@@ -1,0 +1,41 @@
+Epoch: 1  Val accuracy: 98.160%  Loss: 0.65500  
+(improved)
+Epoch: 2  Val accuracy: 98.600%  Loss: 0.47943  
+(improved)
+Epoch: 3  Val accuracy: 98.860%  Loss: 0.37982  
+(improved)
+Epoch: 4  Val accuracy: 99.000%  Loss: 0.32396  
+(improved)
+Epoch: 5  Val accuracy: 99.120%  Loss: 0.28694  
+(improved)
+Epoch: 6  Val accuracy: 99.100%  Loss: 0.26797  
+(improved)
+Epoch: 7  Val accuracy: 99.080%  Loss: 0.24502  
+(improved)
+Epoch: 8  Val accuracy: 99.160%  Loss: 0.23146  
+(improved)
+Epoch: 9  Val accuracy: 99.260%  Loss: 0.21805  
+(improved)
+Epoch: 10  Val accuracy: 99.220%  Loss: 0.21111 
+(improved)
+Epoch: 11  Val accuracy: 99.200%  Loss: 0.20270 
+(improved)
+Epoch: 12  Val accuracy: 99.200%  Loss: 0.20048 
+(improved)
+Epoch: 13  Val accuracy: 99.280%  Loss: 0.19315 
+(improved)
+Epoch: 14  Val accuracy: 99.260%  Loss: 0.18721 
+(improved)
+Epoch: 15  Val accuracy: 99.200%  Loss: 0.18509 
+(improved)
+Epoch: 16  Val accuracy: 99.200%  Loss: 0.18346 
+(improved)
+Epoch: 17  Val accuracy: 99.220%  Loss: 0.17876 
+(improved)
+Epoch: 18  Val accuracy: 99.160%  Loss: 0.17961 
+Epoch: 19  Val accuracy: 99.220%  Loss: 0.17521 
+(improved)
+Epoch: 20  Val accuracy: 99.260%  Loss: 0.17079 
+(improved)
+
+python3 train.py --checkpoint_dir=Shared_Checkpoint_ANOTHER --checkpoint_name=caps_net_shared_20 --n_epochs=20
