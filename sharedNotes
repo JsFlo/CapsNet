@@ -39,3 +39,61 @@ Epoch: 20  Val accuracy: 99.260%  Loss: 0.17079
 (improved)
 
 python3 train.py --checkpoint_dir=Shared_Checkpoint_ANOTHER --checkpoint_name=caps_net_shared_20 --n_epochs=20
+Epoch: 1  Val accuracy: 99.240%  Loss: 0.17061  
+(improved)
+Epoch: 2  Val accuracy: 99.240%  Loss: 0.17212  
+Epoch: 3  Val accuracy: 99.200%  Loss: 0.16826  
+(improved)
+Epoch: 4  Val accuracy: 99.280%  Loss: 0.16873  
+Epoch: 5  Val accuracy: 99.140%  Loss: 0.16629  
+(improved)
+Epoch: 6  Val accuracy: 99.260%  Loss: 0.16473  
+(improved)
+Epoch: 7  Val accuracy: 99.200%  Loss: 0.16282  
+(improved)
+Epoch: 8  Val accuracy: 99.120%  Loss: 0.16217  
+(improved)
+Epoch: 9  Val accuracy: 99.200%  Loss: 0.16452  
+Epoch: 10  Val accuracy: 99.340%  Loss: 0.16025 
+(improved)
+Epoch: 11  Val accuracy: 99.240%  Loss: 0.16083 
+Epoch: 12  Val accuracy: 99.200%  Loss: 0.15890 
+(improved)
+Epoch: 13  Val accuracy: 99.280%  Loss: 0.15920 
+Epoch: 14  Val accuracy: 99.300%  Loss: 0.16035 
+Epoch: 15  Val accuracy: 99.240%  Loss: 0.16028 
+Epoch: 16  Val accuracy: 99.280%  Loss: 0.15985 
+Epoch: 17  Val accuracy: 99.240%  Loss: 0.15904 
+Epoch: 18  Val accuracy: 99.240%  Loss: 0.15878 
+(improved)
+Epoch: 19  Val accuracy: 99.280%  Loss: 0.15851 
+(improved)
+Epoch: 20  Val accuracy: 99.220%  Loss: 0.15888 
+
+Epoch: 1  Val accuracy: 99.200%  Loss: 0.15803  
+(improved)
+Epoch: 2  Val accuracy: 99.280%  Loss: 0.15853  
+Epoch: 3  Val accuracy: 99.180%  Loss: 0.15896  
+Epoch: 4  Val accuracy: 99.240%  Loss: 0.15692  
+(improved)
+Epoch: 5  Val accuracy: 99.260%  Loss: 0.15928  
+Epoch: 6  Val accuracy: 99.260%  Loss: 0.15914  
+Epoch: 7  Val accuracy: 99.260%  Loss: 0.15692  
+Epoch: 8  Val accuracy: 99.240%  Loss: 0.15899  
+Epoch: 9  Val accuracy: 99.240%  Loss: 0.15688  
+(improved)
+Epoch: 10  Val accuracy: 99.200%  Loss: 0.15794 
+Epoch: 11  Val accuracy: 99.240%  Loss: 0.15818 
+Epoch: 12  Val accuracy: 99.300%  Loss: 0.15777 
+Epoch: 13  Val accuracy: 99.320%  Loss: 0.15565 
+(improved)
+Epoch: 14  Val accuracy: 99.260%  Loss: 0.15523 
+(improved)
+Epoch: 15  Val accuracy: 99.240%  Loss: 0.15482 
+(improved)
+Epoch: 16  Val accuracy: 99.300%  Loss: 0.15687 
+Epoch: 17  Val accuracy: 99.240%  Loss: 0.15744 
+Epoch: 18  Val accuracy: 99.300%  Loss: 0.15720 
+Epoch: 19  Val accuracy: 99.240%  Loss: 0.15761 
+Epoch: 20  Val accuracy: 99.220%  Loss: 0.15730 
+
