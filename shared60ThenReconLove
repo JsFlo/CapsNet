@@ -1,0 +1,47 @@
+Epoch: 1  Val accuracy: 92.120%  Loss: 41.18980 
+(improved)
+Epoch: 2  Val accuracy: 94.200%  Loss: 27.91764 
+(improved)
+Epoch: 3  Val accuracy: 95.160%  Loss: 22.17887 
+(improved)
+Epoch: 4  Val accuracy: 95.860%  Loss: 19.11602 
+(improved)
+Epoch: 5  Val accuracy: 96.000%  Loss: 17.68588 
+(improved)
+Epoch: 6  Val accuracy: 96.160%  Loss: 16.54125 
+(improved)
+Epoch: 7  Val accuracy: 96.400%  Loss: 15.78145 
+(improved)
+Epoch: 8  Val accuracy: 96.760%  Loss: 15.10480 
+(improved)
+Epoch: 9  Val accuracy: 96.520%  Loss: 14.79169 
+(improved)
+Epoch: 10  Val accuracy: 96.840%  Loss: 14.55282
+(improved)
+Epoch: 11  Val accuracy: 97.060%  Loss: 14.05670
+(improved)
+
+Epoch: 1  Val accuracy: 96.540%  Loss: 11.20409 
+(improved)
+Epoch: 2  Val accuracy: 96.520%  Loss: 11.01518 
+(improved)
+Epoch: 3  Val accuracy: 96.680%  Loss: 11.06794 
+Epoch: 4  Val accuracy: 96.340%  Loss: 11.18198 
+Epoch: 5  Val accuracy: 95.960%  Loss: 11.25053 
+Epoch: 6  Val accuracy: 96.540%  Loss: 10.99301 
+(improved)
+Epoch: 7  Val accuracy: 96.500%  Loss: 10.87005 
+(improved)
+Epoch: 8  Val accuracy: 96.200%  Loss: 10.98698 
+Epoch: 9  Val accuracy: 96.040%  Loss: 11.04191 
+Epoch: 10  Val accuracy: 96.220%  Loss: 10.90545
+Epoch: 11  Val accuracy: 96.000%  Loss: 10.87527
+Epoch: 12  Val accuracy: 96.020%  Loss: 10.82006
+(improved)
+Epoch: 13  Val accuracy: 96.180%  Loss: 10.85698
+Epoch: 14  Val accuracy: 95.860%  Loss: 10.94494
+Epoch: 15  Val accuracy: 96.000%  Loss: 10.96061
+Epoch: 16  Val accuracy: 95.720%  Loss: 10.89397
+Epoch: 17  Val accuracy: 95.820%  Loss: 10.88348
+Epoch: 18  Val accuracy: 95.600%  Loss: 10.90251
+
